@@ -1,0 +1,50 @@
+<link rel="import" href="../polymer/polymer-element.html">
+
+<dom-module id="exmg-paper-combobox">
+ <template>
+   <style>
+   :host {
+     display: block;
+   }
+ </style>
+ <div>Test</div>
+</template>
+<script>
+'use strict';
+{
+/**
+* `exmg-paper-combobox` is an element to show input data
+*
+* @customElement
+* @polymer
+* @group Exmg Elements
+* @element exmg-paper-combobox
+* @demo demo/index.html
+* @memberof Exmg
+* @extends Polymer.Element
+* @summary Paper Combobox Element
+*/
+ class PaperComboboxElement extends Polymer.Element {
+   static get is() {
+     return 'exmg-web-socket';
+   }
+   static get properties() {
+     return {
+       verbose: Boolean,
+     };
+   }
+
+   connectedCallback() {
+     super.connectedCallback();
+     console.log('Created');
+   }
+ }
+ window.customElements.define(PaperComboboxElement.is, PaperComboboxElement);
+ /**
+   * @namespace Exmg
+ */
+ window.Exmg = window.Exmg || {};
+ Exmg.PaperComboboxElement = PaperComboboxElement;
+}
+</script>
+</dom-module>

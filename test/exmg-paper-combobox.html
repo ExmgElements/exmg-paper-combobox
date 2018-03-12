@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+ <title>exmg-paper-combobox</title>
+
+ <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+ <script src="../../web-component-tester/browser.js"></script>
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../exmg-paper-combobox.html">
+</head>
+<body>
+ <test-fixture id="BasicExmgPaperCombobox">
+   <template>
+     <exmg-paper-combobox></exmg-paper-combobox>
+   </template>
+ </test-fixture>
+ <script>
+   suite('<exmg-paper-combobox>', _ => {
+     let el;
+
+     setup(() => {
+       el = fixture('BasicExmgPaperCombobox');
+     });
+
+     suite('basic usage', _ => {
+       test('element is upgraded', () => {
+         assert.equal(el.constructor.is, 'exmg-paper-combobox');
+       });
+     });
+
+   });
+ </script>
+</body>
+</html>
