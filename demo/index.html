@@ -4,12 +4,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
 
-    <title>exmg-paper-combobox demo</title>
+    <title>exmg-long-ago demo</title>
 
-    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 
+    <link rel="import" href="../../polymer/lib/mixins/gesture-event-listeners.html">
     <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../../paper-card/paper-card.html">
+
     <link rel="import" href="../exmg-paper-combobox.html">
 
     <custom-style>
@@ -18,13 +21,92 @@
     </custom-style>
   </head>
   <body>
-    <div class="vertical-section-container centered">
-      <h3>Basic exmg-paper-combobox demo</h3>
-      <demo-snippet>
-        <template>
-          <exmg-paper-combobox></exmg-paper-combobox>
-        </template>
-      </demo-snippet>
-    </div>
+    <dom-module id="paper-combobox-demo">
+      <template>
+        <div class="vertical-section-container centered">
+          <custom-style>
+            <style>
+              pre {
+                background: white;
+                padding: 22px;
+              }
+              select,
+              input {
+                width: 450px;
+                padding: 6px;
+              }
+              input.small {
+                width: 150px;
+              }
+              select {
+                background: white;
+                border: 1px solid #ccc;
+                border-radius: 1px;
+                font-size: 12px;
+                height: 29px;
+                padding: 5px;
+              }
+              button {
+                padding: 6px;
+                background: #c7bfbf;
+                color: black;
+                min-width: 100px;
+                border: none;
+              }
+              label > span {
+                display: block;
+                margin: 16px 0 6px 0;
+              }
+              p {
+                margin: 16px 4px !important;
+              }
+            </style>
+          </custom-style>
+          <h3>Basic exmg-paper-combobox demo</h3>
+          <demo-snippet>
+            <exmg-paper-combobox label="Creatives" selected="{{creativesToAdd}}" attr-for-selected="data-id" required>
+              <template is="dom-repeat" items="[[lastResponseCreatives.items]]">
+                <paper-icon-item data-id$="[[item.creativeId]]">
+                  <template is="dom-if" if="[[_isImage(item.type)]]">
+                    <iron-icon src="[[item.bannerUrl]]" item-icon></iron-icon>
+                  </template>
+                  <paper-item-body >
+                    <div class="name">[[item.name]]</div>
+                  </paper-item-body>
+                </paper-icon-item>
+              </template>
+            </exmg-paper-combobox>
+          </demo-snippet>
+        </div>
+      </template>
+      <script>
+        window.addEventListener('WebComponentsReady', function() {
+          class PaperComboboxDemo extends Polymer.GestureEventListeners(Polymer.Element) {
+            static get is() {
+              return 'paper-combobox-demo';
+            }
+            static get properties() {
+              return {
+                lastResponseCreatives: {
+                  type: Array,
+                  value: { 
+                    items: [
+                      { 'creativeId' : '3453456246', name: 'Martins stuff', bannerUrl: 'test.nl' },
+                      { 'creativeId' : '245346246', name: 'Marks items', bannerUrl: 'test.nl' },
+                    ]
+                  }
+                }
+              };
+            }
+
+            _isImage(type){
+              return type ===	'IMAGE';	
+            };
+          }
+          window.customElements.define(PaperComboboxDemo.is, PaperComboboxDemo);
+        });
+      </script>
+    </dom-module>
+    <paper-combobox-demo></paper-combobox-demo>
   </body>
 </html>
