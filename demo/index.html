@@ -11,7 +11,11 @@
     <link rel="import" href="../../polymer/lib/mixins/gesture-event-listeners.html">
     <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../../paper-item/paper-item.html">
+    <link rel="import" href="../../paper-item/paper-item-body.html">
     <link rel="import" href="../../paper-card/paper-card.html">
+
+    <link rel="import" href="../../paper-item/paper-icon-item.html">
 
     <link rel="import" href="../exmg-paper-combobox.html">
 
@@ -70,7 +74,7 @@
                   <template is="dom-if" if="[[_isImage(item.type)]]">
                     <iron-icon src="[[item.bannerUrl]]" item-icon></iron-icon>
                   </template>
-                  <paper-item-body >
+                  <paper-item-body>
                     <div class="name">[[item.name]]</div>
                   </paper-item-body>
                 </paper-icon-item>
