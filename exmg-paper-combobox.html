@@ -4,14 +4,14 @@
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../iron-input/iron-input.html">
-<link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-input/paper-input-error.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../paper-input/paper-input-container.html">
 <link rel="import" href="../paper-styles/paper-styles.html">
-<link rel="import" href="../paper-styles/paper-styles.html">
 <link rel="import" href="../web-animations/web-animations-next.min.html">
+
+<link rel="import" href="exmg-paper-combobox-icons.html">
 
 <dom-module id="exmg-paper-combobox">
   <template>
@@ -20,6 +20,12 @@
   <script>
   {
     'use strict';
+
+    const BACKSPACE = 8;
+    const ENTER = 13;
+    const ARROWDOWN = 40;
+    const DELETE = 127;
+
     /**
     * `exmg-paper-combobox` is an element to show input data
     *
@@ -68,6 +74,14 @@
           * Returns currently selected item.
           */
           selectedItem: {
+            type: Object,
+            notify: true,
+          },
+
+          /**
+          * Gets or sets the selected elements.
+          */
+          selectedValue: {
             type: Object,
             notify: true,
           },
@@ -127,6 +141,11 @@
           */
           _inputValue: {
             type: String,
+          },
+
+          _token: {
+            type: Object,
+            value: () => {},
           },
 
           invalid: {
@@ -219,7 +238,9 @@
                   if="[[_token]]">
                   <paper-button
                     tabindex="-1"
-                    on-tap="_handleDeleteToken">[[_token.text]]</paper-button>
+                    on-tap="_handleDeleteToken">
+                    <span>[[_token.text]]</span><iron-icon icon="exmg-paper-combobox-icons:clear"></iron-icon>
+                  </paper-button>
                 </template>
                 <input
                   id="inputValue"
@@ -236,13 +257,13 @@
           <span id="inputWidthHelper">[[_inputValue]] </span>
 
           <paper-menu-button id="menu" close-on-activate opened="{{opened}}" vertical-offset="60" horizontal-align="right" restore-focus-on-close disabled$="[[disabled]]">
-            <paper-icon-button data-opened$="[[opened]]" class="dropdown-trigger"></paper-icon-button>
+            <paper-icon-button icon="exmg-paper-combobox-icons:arrow-drop-down" data-opened$="[[opened]]" slot="dropdown-trigger"></paper-icon-button>
             <paper-listbox
               id="listbox"
               slot="dropdown-content"
               selectable="paper-item:not([hidden]),paper-icon-item:not([hidden])"
               attr-for-selected="{{attrForSelected}}"
-              selected="{{selected}}"
+              selected="{{selectedValue}}"
               class="dropdown-content"
               selected-item="{{selectedItem}}"
               on-iron-select="_handleAddToken" on-iron-deselect="_resetInput">
@@ -258,37 +279,57 @@
         ];
       }
 
-      _observeInputChange(_inputValue) {
-        console.log('Change!', _inputValue);
+      constructor() {
+        super();
+        this._boundKeyDown = this._handleKeyDown.bind(this);
+        this._boundOutsideClick = this._handleClick.bind(this);
+      }
 
+      _observeInputChange(_inputValue) {
         this.$.inputValue.style.width = (this.$.inputWidthHelper.offsetWidth + 10) + 'px';
         this._filterItems();
-      };
+      }
+
+      _filterItems() {
+        const items = this.querySelectorAll('paper-item, paper-icon-item');
+        for (var i = 0; i < items.length; i++) {
+          if (this._inputValue.length > 0 && items[i].textContent.indexOf(this._inputValue) === -1) {
+            items[i].setAttribute('hidden', '');
+          } else {
+            items[i].removeAttribute('hidden');
+          }
+        }
+      }
 
       _observeSelectedItem(selectedItem) {
-        if(!selectedItem) {
+        if (!selectedItem) {
           this.set('_token', null);
           return;
         }
 
-        const id = this.attrForSelected ? selectedItem.getAttribute(this.attrForSelected) : this.indexOf(selectedItem);
-        const text = this.selectedItemSelector ? selectedItem.querySelector(this.selectedItemSelector).textContent
-            : selectedItem.textContent;
+        const id = this.attrForSelected ?
+          selectedItem.getAttribute(this.attrForSelected) :
+          this.indexOf(selectedItem);
+
+        const text = this.selectedItemSelector ?
+          selectedItem.querySelector(this.selectedItemSelector).textContent :
+          selectedItem.textContent;
         
-        this.set('_token', {id, text});
-      };
+        this.set('_token', { id, text });
+      }
 
       _handleDeleteToken(e) {
-        this.focus();
-      };
+        e.stopPropagation();
+        this.set('selectedValue', null);
+        
+        this._resetInput();
+      }
 
       indexOf(item) {
         return this.$.listbox.items ? this.$.listbox.items.indexOf(item) : -1;
       };
 
       _handleClick(e) {
-        console.log('click!', e);
-        
         const inside = e.path.find((path) => path === this);
         // Detect outside element click for auto validate input
         if (this.autoValidate && !inside && this.previousInsideClick) {
@@ -298,32 +339,14 @@
       };
 
       _handleAddToken(e) {
-        console.log('Token', e);
-
         e.stopPropagation();
         this._resetInput();
       };
 
-      _filterItems() {
-        const items = this.querySelectorAll('paper-item,paper-icon-item');
-        for (var i = 0; i < items.length; i++) {
-          if (this._inputValue.length > 0 && items[i].textContent.indexOf(this._inputValue) === -1) {
-            items[i].setAttribute('hidden', '');
-          } else {
-            items[i].removeAttribute('hidden');
-          }
-        }
-      };
-
       connectedCallback() {
         super.connectedCallback();
-
-        this._boundKeyDown = this._handleKeyDown.bind(this);
-        this._boundOutsideClick = this._handleClick.bind(this);
-
         /* Initialize the input helper span element for determining the actual width of the input
           text. This width will be used to create a dynamic width on the input field */
-
         this.$.inputWidthHelper.style = window.getComputedStyle(this.$.inputValue, null).cssText;
         this.$.inputWidthHelper.style.position = 'absolute';
         this.$.inputWidthHelper.style.top = '-999px';
@@ -332,36 +355,31 @@
         this.$.inputWidthHelper.style.width = 'auto';
         this.$.inputWidthHelper.style['white-space'] = 'pre';
 
-        console.log('this.$.inputValue ::: ', this.$.inputValue);
-
         this.$.inputValue.addEventListener('keydown', this._boundKeyDown);
-
         if (this.autoValidate) {
           window.addEventListener('click', this._boundOutsideClick);
         }
-      };
+      }
 
       disconnectedCallback() {
         super.disconnectedCallback();
-
         this.$.inputValue.removeEventListener('keydown', this._boundKeyDown);
-
         if (this.autoValidate) {
           window.removeEventListener('click', this._boundOutsideClick);
         }
-      };
+      }
 
       _handleKeyDown(e) {
-        console.log('key!', e);
-
         this._inputValue = this._inputValue || '';
-        const BACKSPACE = 8;
-        const ARROWDOWN = 40;
         switch (e.keyCode) {
           case BACKSPACE:
-            this.reset();
+          case DELETE:
+            this.opened = true;
+            this.set('selectedValue', null);
+            this.focus();
             break;
           case ARROWDOWN:
+          case ENTER:
             this.opened = true;
             this.$.listbox.focus();
             break;
@@ -370,11 +388,11 @@
             Polymer.RenderStatus.afterNextRender(this, _ => this.focus());
             break;
         }
-      };
+      }
 
       _hasSelectedItem() {
-        return this.selectedItem !== undefined && this.selectedItem !== null;
-      };
+        return this.selectedValue !== undefined && this.selectedValue !== null;
+      }
 
       /**
         * this method can be used to set the focus of the element
@@ -383,7 +401,7 @@
         */
       focus() {
         this.$.inputValue.focus();
-      };
+      }
 
       /**
         * This method will automaticly set the label float.
@@ -393,18 +411,12 @@
           return true;
         }
         return !((_token === undefined || _token === null) && this.$.inputValue !== document.activeElement);
-      };
+      }
 
       _handleContainerTap(e) {
         this.opened = true;
         Polymer.RenderStatus.afterNextRender(this, _ => this.focus());
-      };
-
-      reset() {
-        this._resetInput();
-        this.set('selectedItem', null);
-        this.set('selected', null);
-      };
+      }
 
       _resetInput() {
         if (this.autoValidate) {
@@ -412,14 +424,10 @@
         }
         this._inputValue = '';
         this.focus();
-      };
+      }
 
       _showLabel(_token) {
-        console.log('init');
-        
         if (_token) {
-          console.log('token :::: ', _token);
-
           return _token.text;
         }
 
@@ -433,7 +441,7 @@
       validate() {
         this.invalid = this.required && !this._hasSelectedItem();
         return !this.invalid;
-      };
+      }
     }
     window.customElements.define(PaperComboboxElement.is, PaperComboboxElement);
     /**
