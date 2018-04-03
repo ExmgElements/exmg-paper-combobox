@@ -331,8 +331,9 @@
 
       _handleClick(e) {
         const inside = e.path.find((path) => path === this);
+
         // Detect outside element click for auto validate input
-        if (this.autoValidate && !inside && this.previousInsideClick) {
+        if (this.autoValidate && (this.previousInsideClick && !inside) || this._token) {
           this.validate();
         }
         this.previousInsideClick = inside;
@@ -423,7 +424,6 @@
           this.validate();
         }
         this._inputValue = '';
-        this.focus();
       }
 
       _showLabel(_token) {

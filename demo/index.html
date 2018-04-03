@@ -28,57 +28,62 @@
     <dom-module id="paper-combobox-demo">
       <template>
         <div class="vertical-section-container centered">
-          <custom-style>
-            <style>
-              pre {
-                background: white;
-                padding: 22px;
-              }
-              select,
-              input {
-                width: 450px;
-                padding: 6px;
-              }
-              input.small {
-                width: 150px;
-              }
-              select {
-                background: white;
-                border: 1px solid #ccc;
-                border-radius: 1px;
-                font-size: 12px;
-                height: 29px;
-                padding: 5px;
-              }
-              button {
-                padding: 6px;
-                background: #c7bfbf;
-                color: black;
-                min-width: 100px;
-                border: none;
-              }
-              label > span {
-                display: block;
-                margin: 16px 0 6px 0;
-              }
-              p {
-                margin: 16px 4px !important;
-              }
-            </style>
-          </custom-style>
           <h3>Basic exmg-paper-combobox demo</h3>
+          <demo-snippet>
+            <h4>Selection-list</h4>
+            <exmg-paper-combobox label="Creatives" selected="{{creativesToAdd}}" required>
+              <paper-item>Rubin</paper-item>
+              <paper-item>Gennie</paper-item>
+              <paper-item>Ronna</paper-item>
+              <paper-item>Jacquie</paper-item>
+              <paper-item>Norene</paper-item>
+              <paper-item>Beatris</paper-item>
+              <paper-item>Ginny</paper-item>
+              <paper-item>Tiesha</paper-item>
+              <paper-item>Leonore</paper-item>
+              <paper-item>Evonne</paper-item>
+            </exmg-paper-combobox>
+
+            <h4>Selection-list with selected value</h4>
+            <exmg-paper-combobox label="Creatives" selected="{{creativesToAdd}}" attr-for-selected="data-id" selected-value="[6007]" required>
+                <paper-item data-id="1001">Rubin</paper-item>
+                <paper-item data-id="1012">Gennie</paper-item>
+                <paper-item data-id="1403">Ronna</paper-item>
+                <paper-item data-id="1004">Jacquie</paper-item>
+                <paper-item data-id="3035">Norene</paper-item>
+                <paper-item data-id="3006">Beatris</paper-item>
+                <paper-item data-id="6007">Ginny</paper-item>
+                <paper-item data-id="14408">Tiesha</paper-item>
+                <paper-item data-id="4309">Leonore</paper-item>
+                <paper-item data-id="4010">Evonne</paper-item>
+              </exmg-paper-combobox>
+          </demo-snippet>
+          <h3>Basic exmg-paper-combobox demo through dom-repeat and images</h3>
           <demo-snippet>
             <exmg-paper-combobox label="Creatives" selected="{{creativesToAdd}}" attr-for-selected="data-id" required>
               <template is="dom-repeat" items="[[lastResponseCreatives.items]]">
                 <paper-icon-item data-id$="[[item.creativeId]]">
                   <template is="dom-if" if="[[_isImage(item.type)]]">
-                    <iron-icon src="[[item.bannerUrl]]" item-icon></iron-icon>
+                    <iron-icon src="[[item.bannerUrl]]" slot="item-icon"></iron-icon>
                   </template>
                   <paper-item-body>
                     <div class="name">[[item.name]]</div>
                   </paper-item-body>
                 </paper-icon-item>
               </template>
+            </exmg-paper-combobox>
+          </demo-snippet>
+          <h3>Basic exmg-paper-combobox Required/Disabled</h3>
+          <demo-snippet>
+            <exmg-paper-combobox label="Select Users" required auto-validate error-message="Input required">
+              <paper-item>Rubin</paper-item>
+              <paper-item>Gennie</paper-item>
+              <paper-item>Ronna</paper-item>
+            </exmg-paper-combobox>
+            <exmg-paper-combobox label="Select Users" disabled>
+              <paper-item>Rubin</paper-item>
+              <paper-item>Gennie</paper-item>
+              <paper-item>Ronna</paper-item>
             </exmg-paper-combobox>
           </demo-snippet>
         </div>
@@ -95,8 +100,10 @@
                   type: Array,
                   value: { 
                     items: [
-                      { 'creativeId' : '3453456246', name: 'Martins stuff', bannerUrl: 'test.nl' },
-                      { 'creativeId' : '245346246', name: 'Marks items', bannerUrl: 'test.nl' },
+                      { 'creativeId' : '3453456246', name: 'Martins stuff' },
+                      { 'creativeId' : '245346246', name: 'Marks items' },
+                      { 'creativeId' : '245346246', name: 'Marks items', bannerUrl: 'https://s3.amazonaws.com/uifaces/faces/twitter/sebasribas/73.jpg', type: 'IMAGE' },
+                      { 'creativeId' : '245346246', name: 'Marks items', bannerUrl: 'https://s3.amazonaws.com/uifaces/faces/twitter/dnevozhai/73.jpg', type: 'IMAGE' },
                     ]
                   }
                 }
