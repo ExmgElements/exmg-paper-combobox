@@ -27,8 +27,24 @@
     const DELETE = 127;
 
     /**
-    * `exmg-paper-combobox` is an element to show input data
-    *
+    * `exmg-paper-combobox` is an wrapper element to make list data selectable.
+    * The Element comes with options to make the list required, disabled and/or auto-validate. Lists should consist of id's and names and can have images.
+    * 
+    * ```
+    * <exmg-paper-combobox label="Creatives" selected="{{creativesToAdd}}" required>
+    *   <paper-item>Rubin</paper-item>
+    *   <paper-item>Gennie</paper-item>
+    *   <paper-item>Ronna</paper-item>
+    *   <paper-item>Jacquie</paper-item>
+    *   <paper-item>Norene</paper-item>
+    *   <paper-item>Beatris</paper-item>
+    *   <paper-item>Ginny</paper-item>
+    *   <paper-item>Tiesha</paper-item>
+    *   <paper-item>Leonore</paper-item>
+    *   <paper-item>Evonne</paper-item>
+    * </exmg-paper-combobox>
+    * ```
+    * 
     * @customElement
     * @polymer
     * @group Exmg Elements
@@ -137,7 +153,7 @@
           },
 
           /**
-          * This field will be bind to the actual input field
+          * This field will be bind to the actual input field.
           */
           _inputValue: {
             type: String,
@@ -148,17 +164,18 @@
             value: () => {},
           },
 
+          /**
+          * Invalid is true if validation fails and is passed on.
+          */
           invalid: {
             type: Boolean,
           },
 
+          /**
+          * Focus input field if value has been set on element.
+          */
           inputFocused: {
             type: Boolean,
-          },
-
-          selected: {
-            type: Object,
-            notify: true,
           },
         };
       }
