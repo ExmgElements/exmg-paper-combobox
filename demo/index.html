@@ -98,21 +98,23 @@
               return {
                 lastResponseCreatives: {
                   type: Array,
-                  value: { 
+                  value: {
                     items: [
-                      { 'creativeId' : '3453456246', name: 'Martins stuff' },
-                      { 'creativeId' : '245346246', name: 'Marks items' },
-                      { 'creativeId' : '245346246', name: 'Marks items', bannerUrl: 'https://s3.amazonaws.com/uifaces/faces/twitter/sebasribas/73.jpg', type: 'IMAGE' },
-                      { 'creativeId' : '245346246', name: 'Marks items', bannerUrl: 'https://s3.amazonaws.com/uifaces/faces/twitter/dnevozhai/73.jpg', type: 'IMAGE' },
+                      {'creativeId': '3453456246', 'name': 'Martins stuff'},
+                      {'creativeId': '245346246', 'name': 'Marks items'},
+                      {'creativeId': '245346246', 'name': 'Marks items',
+                        'bannerUrl': 'https://s3.amazonaws.com/uifaces/faces/twitter/sebasribas/73.jpg', 'type': 'IMAGE'},
+                      {'creativeId': '245346246', 'name': 'Marks items',
+                        'bannerUrl': 'https://s3.amazonaws.com/uifaces/faces/twitter/dnevozhai/73.jpg', 'type': 'IMAGE'},
                     ]
                   }
                 }
               };
             }
 
-            _isImage(type){
-              return type ===	'IMAGE';	
-            };
+            _isImage(type) {
+              return type ===	'IMAGE';
+            }
           }
           window.customElements.define(PaperComboboxDemo.is, PaperComboboxDemo);
         });
