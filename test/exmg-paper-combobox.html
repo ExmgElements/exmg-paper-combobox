@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+<head>
+  <title>exmg-paper-combobox</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../exmg-paper-combobox.html">
+</head>
+<body>
+  <test-fixture id="ExmgPaperComboboxBasicElement">
+    <template>
+      <exmg-paper-combobox></exmg-paper-combobox>
+    </template>
+  </test-fixture>
+  <test-fixture id="ExmgPaperComboboxList">
+    <template>
+      <exmg-paper-combobox label="Creatives" selected="{{creativesToAdd}}" required>
+        <paper-item>Rubin</paper-item>
+        <paper-item>Gennie</paper-item>
+        <paper-item>Ronna</paper-item>
+        <paper-item>Jacquie</paper-item>
+        <paper-item>Norene</paper-item>
+        <paper-item>Beatris</paper-item>
+        <paper-item>Ginny</paper-item>
+        <paper-item>Tiesha</paper-item>
+        <paper-item>Leonore</paper-item>
+        <paper-item>Evonne</paper-item>
+      </exmg-paper-combobox>
+    </template>
+  </test-fixture>
+  <test-fixture id="ExmgPaperComboboxListWithSelection">
+    <template>
+      <exmg-paper-combobox label="Creatives" selected="{{creativesToAdd}}" attr-for-selected="data-id" selected-value="[6007]" required>
+        <paper-item data-id="1001">Rubin</paper-item>
+        <paper-item data-id="1012">Gennie</paper-item>
+        <paper-item data-id="1403">Ronna</paper-item>
+        <paper-item data-id="1004">Jacquie</paper-item>
+        <paper-item data-id="3035">Norene</paper-item>
+        <paper-item data-id="3006">Beatris</paper-item>
+        <paper-item data-id="6007">Ginny</paper-item>
+        <paper-item data-id="14408">Tiesha</paper-item>
+        <paper-item data-id="4309">Leonore</paper-item>
+        <paper-item data-id="4010">Evonne</paper-item>
+      </exmg-paper-combobox>
+    </template>
+  </test-fixture>
+  <test-fixture id="ExmgPaperComboboxRequired">
+    <template>
+      <exmg-paper-combobox label="Select Users" required auto-validate error-message="Input required">
+        <paper-item>Rubin</paper-item>
+        <paper-item>Gennie</paper-item>
+        <paper-item>Ronna</paper-item>
+      </exmg-paper-combobox>
+    </template>
+  </test-fixture>
+  <test-fixture id="ExmgPaperComboboxDisabled">
+    <template>
+      <exmg-paper-combobox label="Select Users" disabled>
+        <paper-item>Rubin</paper-item>
+        <paper-item>Gennie</paper-item>
+        <paper-item>Ronna</paper-item>
+      </exmg-paper-combobox>
+    </template>
+  </test-fixture>
+  <script>
+    suite('<exmg-paper-combobox>', () => {
+      let element;
+
+      const timePasses = (ms) => {
+        return new Promise((resolve) => {
+          window.setTimeout(_ => {
+            resolve();
+          }, ms);
+        });
+      };
+
+      suite('basic usage', () => {
+        test('element is upgraded', () => {
+          element = fixture('ExmgPaperComboboxBasicElement');
+          assert.equal(element.constructor.is, 'exmg-paper-combobox');
+        });
+
+        test('setting label on elment sets the Label value', (done) => {
+          element = fixture('ExmgPaperComboboxBasicElement');
+          const elementShadowRoot = element.shadowRoot;
+          element.label = 'foobar';
+
+          const labelValue = elementShadowRoot.querySelector('label').innerHTML;
+          assert.equal(labelValue === 'foobar', true);
+          done();
+        });
+
+        test('element has list of element when adding children', (done) => {
+          element = fixture('ExmgPaperComboboxList');
+          const elementShadowRoot = element.shadowRoot;
+
+          const listBox = elementShadowRoot.querySelector('paper-listbox');
+          assert.isArray(listBox.items, 'Should be an array');
+          done();
+        });
+
+        test('element has list of element when adding children', (done) => {
+          element = fixture('ExmgPaperComboboxListWithSelection');
+          const elementShadowRoot = element.shadowRoot;
+
+          const listBox = elementShadowRoot.querySelector('paper-listbox');
+          assert.isNotNull(listBox.selected, 'Should be an object');
+          done();
+        });
+
+        test('element has list of element when adding children', (done) => {
+          element = fixture('ExmgPaperComboboxRequired');
+          const elementShadowRoot = element.shadowRoot;
+
+          assert.isTrue(element.required, 'Should be true');
+          done();
+        });
+
+        test('element has list of element when adding children', (done) => {
+          element = fixture('ExmgPaperComboboxDisabled');
+          const elementShadowRoot = element.shadowRoot;
+
+          const paperContainer = elementShadowRoot.querySelector('input');
+          assert.isTrue(paperContainer.disabled, 'Should be true');
+          done();
+        });
+      });
+    });
+ </script>
+</body>
+</html>
