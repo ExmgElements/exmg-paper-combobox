@@ -1,6 +1,7 @@
 {
   "name": "exmg-paper-combobox",
   "description": "Element to parse combobox input",
+  "version": "1.0.0",
   "main": "exmg-paper-combobox.html",
   "dependencies": {
     "polymer": "Polymer/polymer#^2.0.0",
