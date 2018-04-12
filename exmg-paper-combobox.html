@@ -9,7 +9,6 @@
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../paper-input/paper-input-container.html">
 <link rel="import" href="../paper-styles/paper-styles.html">
-<link rel="import" href="../web-animations/web-animations-next.min.html">
 
 <link rel="import" href="exmg-paper-combobox-icons.html">
 
@@ -22,7 +21,6 @@
     'use strict';
 
     const BACKSPACE = 8;
-    const ENTER = 13;
     const ARROWDOWN = 40;
     const DELETE = 127;
 
@@ -234,10 +232,6 @@
             .container {
               @apply --layout-flex;
             }
-            #listbox {
-              min-width: 125px;
-              padding: 12.5px;
-            }
           </style>
           <paper-input-container
             always-float-label="[[_computeAlwaysFloatLabel(_token, alwaysFloatLabel)]]"
@@ -399,7 +393,6 @@
             this.focus();
             break;
           case ARROWDOWN:
-          case ENTER:
             this.opened = true;
             this.$.listbox.focus();
             break;
@@ -430,7 +423,10 @@
         if (alwaysFloatLabel) {
           return true;
         }
-        return !((_token === undefined || _token === null) && this.$.inputValue !== document.activeElement);
+
+        const isLabelFloat = !((_token === undefined || _token === null) && this.$.inputValue !== document.activeElement);
+
+        return isLabelFloat;
       }
 
       _handleContainerTap(e) {
@@ -443,14 +439,7 @@
           this.validate();
         }
         this._inputValue = '';
-      }
-
-      _showLabel(_token) {
-        if (_token) {
-          return _token.text;
-        }
-
-        return this.label;
+        this.focus();
       }
 
       /**
