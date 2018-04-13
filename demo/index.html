@@ -11,6 +11,7 @@
     <link rel="import" href="../../polymer/lib/mixins/gesture-event-listeners.html">
     <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../../paper-input/paper-input.html">
     <link rel="import" href="../../paper-item/paper-item.html">
     <link rel="import" href="../../paper-item/paper-item-body.html">
     <link rel="import" href="../../paper-item/paper-icon-item.html">
@@ -20,8 +21,7 @@
     <link rel="import" href="../exmg-paper-combobox.html">
 
     <custom-style>
-      <style is="custom-style" include="demo-pages-shared-styles">
-      </style>
+      <style is="custom-style" include="demo-pages-shared-styles"></style>
     </custom-style>
   </head>
   <body>
@@ -31,7 +31,7 @@
         <demo-snippet>
           <template>
             <h4>Selection-list</h4>
-            <exmg-paper-combobox label="Creatives" selected="{{creativesToAdd}}" required>
+            <exmg-paper-combobox label="Creatives" style="display:inline-block;">
               <paper-item>Rubin</paper-item>
               <paper-item>Gennie</paper-item>
               <paper-item>Ronna</paper-item>
@@ -45,7 +45,7 @@
             </exmg-paper-combobox>
 
             <h4>Selection-list with selected value</h4>
-            <exmg-paper-combobox label="Creatives" selected="{{creativesToAdd}}" attr-for-selected="data-id" selected-value="[6007]" required>
+            <exmg-paper-combobox label="Creatives" attr-for-selected="data-id" selected="6007">
               <paper-item data-id="1001">Rubin</paper-item>
               <paper-item data-id="1012">Gennie</paper-item>
               <paper-item data-id="1403">Ronna</paper-item>
@@ -66,18 +66,19 @@
               <paper-icon-item data-id="1001">
                 <iron-icon src="https://s3.amazonaws.com/uifaces/faces/twitter/sebasribas/73.jpg" slot="item-icon"></iron-icon>
                 <paper-item-body>
-                    <div class="name">Rubin</div>
+                  <div class="name">Pete</div>
                 </paper-item-body>
               </paper-icon-item>
               <paper-icon-item data-id="1012">
                 <iron-icon src="https://s3.amazonaws.com/uifaces/faces/twitter/sebasribas/73.jpg" slot="item-icon"></iron-icon>
                 <paper-item-body>
-                    <div class="name">Rubin</div>
+                  <div class="name">Rubin</div>
                 </paper-item-body>
               </paper-icon-item>
               <paper-icon-item data-id="1004">
+                <iron-icon src="https://s3.amazonaws.com/uifaces/faces/twitter/sebasribas/73.jpg" slot="item-icon"></iron-icon>
                 <paper-item-body>
-                    <div class="name">Jacquie</div>
+                  <div class="name">Jacquie</div>
                 </paper-item-body>
               </paper-icon-item>
             </exmg-paper-combobox>
