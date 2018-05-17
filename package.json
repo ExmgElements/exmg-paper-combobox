@@ -1,30 +1,55 @@
 {
-  "name": "exmg-paper-combobox",
-  "private": true,
-  "description": "Exmg paper combobox element to parse input content",
-  "main": "exmg-paper-combobox.html",
-  "version": "1.0.1",
-  "keywords": [
-    "Exmg",
-    "ExmgElements",
-    "exmg-paper-token-input",
-    "token",
-    "badge",
-    "Polymer",
-    "Input"
+  "name": "@exmg/exmg-paper-combobox",
+  "flat": true,
+  "version": "3.0.0",
+  "description": "Element to parse combobox input",
+  "contributors": [
+    "Ex Machina Group"
   ],
-  "author": "Ex Machina",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "paper",
+    "combobox"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@bitbucket.org:ExmgElements/exmg-paper-combobox.git"
+  },
+  "license": "MIT",
+  "main": "exmg-paper-combobox.js",
+  "dependencies": {
+    "@polymer/iron-flex-layout": "^3.0.0-pre.1",
+    "@polymer/iron-input": "^3.0.0-pre.1",
+    "@polymer/paper-button": "^3.0.0-pre.1",
+    "@polymer/paper-icon-button": "^3.0.0-pre.1",
+    "@polymer/paper-input": "^3.0.0-pre.1",
+    "@polymer/paper-listbox": "^3.0.0-pre.1",
+    "@polymer/paper-menu-button": "^3.0.0-pre.1",
+    "@polymer/paper-styles": "^3.0.0-pre.1",
+    "@polymer/polymer": "^3.0.0-pre.1"
+  },
   "devDependencies": {
-    "bower": "latest",
+    "@polymer/iron-component-page": "^3.0.0-pre.19",
+    "@polymer/iron-demo-helpers": "^3.0.0-pre.19",
+    "web-animations-js": "^2.3.1",
+    "@webcomponents/webcomponentsjs": "^2.0.0-beta.2",
+    "@polymer/paper-item": "^3.0.0-pre.1",
     "eslint": "^4.11.0",
     "eslint-config-exmg": "latest",
     "eslint-plugin-html": "^3.0.0",
-    "polymer-cli": "^1.2.0",
-    "web-component-tester": "^6.4.1"
+    "wct-browser-legacy": "^1.0.0"
+  },
+  "resolutions": {
+    "@webcomponents/webcomponentsjs": "2.0.0",
+    "type-detect": "1.0.0",
+    "supports-color": "3.1.2",
+    "inherits": "2.0.3",
+    "samsam": "1.1.2"
   },
   "scripts": {
-    "lint": "polymer lint --rules polymer-2 --input *.html",
+    "lint": "polymer lint --rules polymer-3 --input *.js",
     "eslint": "eslint . --ext js,html --ignore-path .gitignore",
-    "analyze": "polymer analyze --input exmg-paper-combobox.html > analysis.json"
+    "analyze": "polymer analyze --input exmg-paper-combobox.js > analysis.json"
   }
 }
