@@ -27,6 +27,7 @@
     "@polymer/paper-listbox": "^3.0.0-pre.1",
     "@polymer/paper-menu-button": "^3.0.0-pre.1",
     "@polymer/paper-styles": "^3.0.0-pre.1",
+    "@polymer/iron-iconset-svg": "^3.0.0-pre.1",
     "@polymer/polymer": "^3.0.0-pre.1"
   },
   "devDependencies": {
