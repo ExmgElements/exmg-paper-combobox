@@ -261,10 +261,11 @@ class PaperComboboxElement extends PolymerElement {
           max-width: 100%;
         }
         paper-menu-button {
-          padding: 8px 0;
+          padding: 0;
+          margin-top: 16px;
         }
         paper-icon-button {
-          margin: 8px 0;
+          margin: 0;
         }
         paper-button {
           padding: 0;
@@ -305,7 +306,7 @@ class PaperComboboxElement extends PolymerElement {
         <span id="inputWidthHelper">[[_inputValue]] </span>
 
         <paper-menu-button id="menu" opened="{{opened}}" disabled$="[[disabled]]"
-          close-on-activate vertical-offset="60" horizontal-align="right">
+          close-on-activate vertical-offset="40" horizontal-align="right">
           <paper-icon-button icon="exmg-paper-combobox-icons:arrow-drop-down" data-opened$="[[opened]]" slot="dropdown-trigger">
           </paper-icon-button>
           <paper-listbox
