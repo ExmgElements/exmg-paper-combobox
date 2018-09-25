@@ -457,7 +457,7 @@ class PaperComboboxElement extends PolymerElement {
   }
 
   _handleAddToken(e) {
-    this.set('selectedItem',  e.detail.item);
+    this.set('selectedItem', e.detail.item);
     e.stopPropagation();
     this._resetInput();
   }
