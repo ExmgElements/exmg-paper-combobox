@@ -2,11 +2,9 @@
 <html>
 <head>
   <title>exmg-paper-combobox</title>
+  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+  <script src="../node_modules/wct-browser-legacy/browser.js"></script>
 
-  <script src="@webcomponents/webcomponentsjs/webcomponents-lite.js"></script>
-  <script src="web-component-tester/browser.js"></script>
-  
-  <script type="module" src="@polymer/polymer/polymer.js"></script>
   <script type="module" src="../exmg-paper-combobox.js"></script>
 </head>
 <body>
@@ -66,71 +64,69 @@
     </template>
   </test-fixture>
   <script type="module">
-import '@polymer/polymer/polymer.js';
-import '../exmg-paper-combobox.js';
-suite('<exmg-paper-combobox>', () => {
-  let element;
+    suite('<exmg-paper-combobox>', () => {
+      let element;
 
-  const timePasses = (ms) => {
-    return new Promise((resolve) => {
-      window.setTimeout(_ => {
-        resolve();
-      }, ms);
+      const timePasses = (ms) => {
+        return new Promise((resolve) => {
+          window.setTimeout(_ => {
+            resolve();
+          }, ms);
+        });
+      };
+
+      suite('basic usage', () => {
+        test('element is upgraded', () => {
+          element = fixture('ExmgPaperComboboxBasicElement');
+          assert.equal(element.constructor.is, 'exmg-paper-combobox');
+        });
+
+        test('setting label on elment sets the Label value', (done) => {
+          element = fixture('ExmgPaperComboboxBasicElement');
+          const elementShadowRoot = element.shadowRoot;
+          element.label = 'foobar';
+
+          const labelValue = elementShadowRoot.querySelector('label').innerHTML;
+          assert.equal(labelValue === 'foobar', true);
+          done();
+        });
+
+        test('element has list of element when adding children', (done) => {
+          element = fixture('ExmgPaperComboboxList');
+          const elementShadowRoot = element.shadowRoot;
+
+          const listBox = elementShadowRoot.querySelector('paper-listbox');
+          assert.isArray(listBox.items, 'Should be an array');
+          done();
+        });
+
+        test('element has list of element when adding children', (done) => {
+          element = fixture('ExmgPaperComboboxListWithSelection');
+          const elementShadowRoot = element.shadowRoot;
+
+          const listBox = elementShadowRoot.querySelector('paper-listbox');
+          assert.isNotNull(listBox.selected, 'Should be an object');
+          done();
+        });
+
+        test('element has list of element when adding children', (done) => {
+          element = fixture('ExmgPaperComboboxRequired');
+          const elementShadowRoot = element.shadowRoot;
+
+          assert.isTrue(element.required, 'Should be true');
+          done();
+        });
+
+        test('element has list of element when adding children', (done) => {
+          element = fixture('ExmgPaperComboboxDisabled');
+          const elementShadowRoot = element.shadowRoot;
+
+          const paperContainer = elementShadowRoot.querySelector('input');
+          assert.isTrue(paperContainer.disabled, 'Should be true');
+          done();
+        });
+      });
     });
-  };
-
-  suite('basic usage', () => {
-    test('element is upgraded', () => {
-      element = fixture('ExmgPaperComboboxBasicElement');
-      assert.equal(element.constructor.is, 'exmg-paper-combobox');
-    });
-
-    test('setting label on elment sets the Label value', (done) => {
-      element = fixture('ExmgPaperComboboxBasicElement');
-      const elementShadowRoot = element.shadowRoot;
-      element.label = 'foobar';
-
-      const labelValue = elementShadowRoot.querySelector('label').innerHTML;
-      assert.equal(labelValue === 'foobar', true);
-      done();
-    });
-
-    test('element has list of element when adding children', (done) => {
-      element = fixture('ExmgPaperComboboxList');
-      const elementShadowRoot = element.shadowRoot;
-
-      const listBox = elementShadowRoot.querySelector('paper-listbox');
-      assert.isArray(listBox.items, 'Should be an array');
-      done();
-    });
-
-    test('element has list of element when adding children', (done) => {
-      element = fixture('ExmgPaperComboboxListWithSelection');
-      const elementShadowRoot = element.shadowRoot;
-
-      const listBox = elementShadowRoot.querySelector('paper-listbox');
-      assert.isNotNull(listBox.selected, 'Should be an object');
-      done();
-    });
-
-    test('element has list of element when adding children', (done) => {
-      element = fixture('ExmgPaperComboboxRequired');
-      const elementShadowRoot = element.shadowRoot;
-
-      assert.isTrue(element.required, 'Should be true');
-      done();
-    });
-
-    test('element has list of element when adding children', (done) => {
-      element = fixture('ExmgPaperComboboxDisabled');
-      const elementShadowRoot = element.shadowRoot;
-
-      const paperContainer = elementShadowRoot.querySelector('input');
-      assert.isTrue(paperContainer.disabled, 'Should be true');
-      done();
-    });
-  });
-});
-</script>
+  </script>
 </body>
 </html>
