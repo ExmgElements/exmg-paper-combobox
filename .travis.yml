@@ -8,7 +8,8 @@ cache:
 
 install:
 - npm install
-- bower install
+- npm i bower
+- npm i polymer-cli
 
 before_script:
 - polymer lint --rules polymer-3 --input *.html
