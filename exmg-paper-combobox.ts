@@ -2,9 +2,9 @@ import {LitElement, html, customElement, property, query} from 'lit-element';
 import {classMap} from 'lit-html/directives/class-map';
 
 import '@polymer/paper-menu-button/paper-menu-button';
-import  {PaperListboxElement} from '@polymer/paper-listbox/paper-listbox';
-import  '@polymer/paper-listbox/paper-listbox'; /*It is repeated on purpose otherwise paper-listbox won't works */ // tslint:disable-line
+import '@polymer/paper-listbox/paper-listbox';
 import '@polymer/paper-icon-button/paper-icon-button';
+
 import '@polymer/iron-input/iron-input';
 import '@polymer/paper-input/paper-input-error';
 import '@polymer/paper-button/paper-button';
@@ -13,12 +13,10 @@ import '@polymer/paper-input/paper-input-container';
 import '@polymer/paper-styles/paper-styles';
 import './exmg-paper-combobox-icons';
 import {afterNextRender} from '@polymer/polymer/lib/utils/render-status';
-import {GenericPropertyValues, isEventWithPath} from './exmg-custom-types';
 
-type Token = {
-  id: number | string;
-  text: string;
-};
+import {GenericPropertyValues, isEventWithPath, Token} from './exmg-custom-types';
+import {PaperMenuButton} from "@polymer/paper-menu-button/paper-menu-button"; /* It is repeated on purpose otherwise element won't works */ // tslint:disable-line
+import  {PaperListboxElement} from '@polymer/paper-listbox/paper-listbox'; /* It is repeated on purpose otherwise element won't works */ // tslint:disable-line
 
 type PrivateProps = 'inputValue' | 'selectedValue';
 
@@ -46,7 +44,7 @@ const DELETE = 127;
 * The Element comes with options to make the list required, disabled and/or auto-validate.
 * Lists should consist of id's and names and can have images.
 * ```
-* <exmg-paper-combobox label="Creatives" selected="{{creativesToAdd}}" required>
+* <exmg-paper-combobox label="Creatives" selected="1" required>
 *   <paper-item>Rubin</paper-item>
 *   <paper-item>Gennie</paper-item>
 *   <paper-item>Ronna</paper-item>
@@ -68,6 +66,8 @@ const DELETE = 127;
 * @memberof Exmg
 * @extends LitElement
 * @summary Paper Combobox Element
+* @eventType exmg-combobox-select - detail is equal to this.selected value
+* @eventType exmg-combobox-deselect - detail is equal to undefined
 */
 @customElement('exmg-paper-combobox')
 export class PaperComboboxElement extends LitElement {
@@ -153,6 +153,40 @@ export class PaperComboboxElement extends LitElement {
    */
   @property({type: Boolean, attribute: 'input-focused'}) inputFocused: boolean = false;
 
+  /**
+   * Is menu button state open
+   */
+  @property({type: Boolean}) private opened: boolean = false;
+
+  @query('#listbox')
+  private listBox?: PaperListboxElement;
+
+  @query('#inputValue')
+  private inputElement?: HTMLInputElement;
+
+  @query('#inputWidthHelper')
+  private inputWidthHelperElement?: HTMLElement;
+
+  @query('#menu')
+  private menuElement?: PaperMenuButton;
+
+  private previousInsideClick: boolean = false;
+
+  private ignoreFocus: boolean = false;
+
+  private observers = this.getObservers();
+
+  constructor() {
+    super();
+    this.onKeyDown = this.onKeyDown.bind(this);
+    this.onClick = this.onClick.bind(this);
+  }
+
+  /***************** OBSERVERS *******************/
+
+  /**
+   * Register observed properties and actions to perform
+   */
   private getObservers(): Record<keyof this, Function> | Record<PrivateProps, Function> {
     return {
       inputValue: () => this.observeInputChange(),
@@ -160,6 +194,22 @@ export class PaperComboboxElement extends LitElement {
       selectedValue: () => this.observeSelectedValue(),
       selected: () => this.observeSelected(),
     };
+  }
+
+  private executeObservers(changedProperties: GenericPropertyValues<keyof this | PrivateProps>): void {
+    Object.entries(this.observers).forEach(([key, cb]) => {
+      if (changedProperties.has(<any>key)) {
+        cb();
+      }
+    });
+  }
+
+  private observeInputChange() {
+    if (this.inputElement && this.inputWidthHelperElement) {
+      this.inputElement.style.width = `${(this.inputWidthHelperElement.offsetWidth + 10)}px`;
+    }
+
+    this.filterItems();
   }
 
   private observeSelectedValue(): void {
@@ -174,7 +224,211 @@ export class PaperComboboxElement extends LitElement {
     this.selectedValue = this.selected;
   }
 
-  private template() {
+  private observeSelectedItem(): void {
+    if (!this.selectedItem) {
+      this.token = undefined;
+      return;
+    }
+
+    const id = this.getSelectedItemKey(this.selectedItem);
+    const selectedItemSelector = '';
+    const content: Element | null = this.selectedItemSelector ?
+        this.selectedItem.querySelector(selectedItemSelector) :
+        this.selectedItem;
+
+    const text = (content && content.textContent) || '';
+
+    this.token = {id, text};
+  }
+
+  filterItems() {
+    const items: NodeListOf<HTMLElement> = this.querySelectorAll('paper-item, paper-icon-item');
+    const hasFilterPhrase = !!this.inputValue && this.inputValue.length > 0;
+
+    items.forEach(item => {
+      if (hasFilterPhrase && item.textContent &&  item.textContent.indexOf(this.inputValue || '') === -1) {
+        item.setAttribute('hidden', '');
+      } else {
+        item.removeAttribute('hidden');
+      }
+    });
+  }
+
+  indexOf(item: any): number {
+    return this.listBox && this.listBox.items ? this.listBox.items.indexOf(item) : -1;
+  }
+
+  private getSelectedItemKey(selectedItem: Element): number | string {
+    return this.attrForSelected ?
+        selectedItem.getAttribute(this.attrForSelected) || -1 :
+        this.indexOf(selectedItem);
+  }
+
+  private hasSelectedItem(): boolean {
+    return !!this.selectedItem;
+  }
+
+  /**
+    * this method can be used to set the focus of the element
+    *
+    * @method indexOf
+    */
+  focus() {
+    this.inputElement!.focus();
+  }
+
+  /**
+    * This method will automatically set the label float.
+    */
+  private computeAlwaysFloatLabel(): boolean {
+    if (this.alwaysFloatLabel) {
+      return true;
+    }
+
+    return !(!this.token && this.inputElement !== document.activeElement);
+  }
+
+  private resetInput(): void {
+    if (this.autoValidate) {
+      this.validate();
+    }
+
+    this.inputValue = '';
+    if (this.ignoreFocus) {
+      this.ignoreFocus = false;
+    } else {
+      this.focus();
+    }
+  }
+
+  /**
+   * Returns true if `value` is valid.
+   * @return {boolean} True if the value is valid.
+   */
+  validate(): boolean {
+    this.invalid = this.required && !this.hasSelectedItem();
+    return !this.invalid;
+  }
+
+  /************ EVENT HANDLERS *************/
+  private onKeyDown(e: KeyboardEvent): void {
+    if (!this.inputValue) {
+      this.inputValue = '';
+    }
+
+    switch (e.keyCode) {
+      case BACKSPACE:
+      case DELETE:
+        this.opened = true;
+        this.selectedValue = undefined;
+        this.selectedItem = undefined;
+        afterNextRender(this, () => this.focus());
+        break;
+      case ARROWDOWN:
+        this.opened = true;
+        this.listBox!.focus();
+        break;
+    }
+  }
+
+  private onClick(e: Event): void {
+    const inside: boolean = isEventWithPath(e) ? !!e.path && !!e.path.find((path) => path === this) : false;
+
+    // Detect outside element click for auto validate input
+    if (this.autoValidate && (this.previousInsideClick && !inside) || this.token) {
+      this.validate();
+    }
+
+    this.previousInsideClick = inside;
+  }
+
+  private onContainerTap(): void {
+    this.menuElement!.open();
+    afterNextRender(this, () => this.focus());
+  }
+
+  private onItemSelected(e: CustomEvent<{item: Element}>): void {
+    e.stopPropagation();
+    this.selectedItem = e.detail.item;
+    this.selected = this.getSelectedItemKey(this.selectedItem);
+
+    this.resetInput();
+  }
+
+  private onMenuButtonOpen(e: Event): void {
+    e.preventDefault();
+    this.opened = true;
+  }
+
+  private onMenuButtonClose(e: Event): void {
+    e.preventDefault();
+    this.opened = false;
+  }
+
+  private onInputValueChange(e: Event): void {
+    this.inputValue = (<HTMLInputElement>e.target).value;
+  }
+
+  private onInputFocusChanged(event: CustomEvent): void {
+    this.inputFocused = event.detail.value;
+  }
+
+  private onTokenClick() {
+    this.focus();
+  }
+
+  private initializeElement() {
+    /* Initialize the input helper span element for determining the actual width of the input
+    * text. This width will be used to create a dynamic width on the input field
+    */
+    if (this.inputWidthHelperElement) {
+      copyElementStyle(this.inputElement!, this.inputWidthHelperElement);
+      this.inputWidthHelperElement.style.position = 'absolute';
+      this.inputWidthHelperElement.style.top = '-999px';
+      this.inputWidthHelperElement.style.left = '0';
+      this.inputWidthHelperElement.style.padding = '0';
+      this.inputWidthHelperElement.style.width = 'auto';
+      this.inputWidthHelperElement.style.whiteSpace = 'pre';
+    }
+
+    this.inputElement!.addEventListener('keydown', this.onKeyDown);
+
+    if (this.autoValidate) {
+      window.addEventListener('click', this.onClick);
+    }
+  }
+
+  /*****  LIT ELEMENT HOOKS ******/
+
+  protected firstUpdated(): void {
+    this.initializeElement();
+  }
+
+  protected updated(changedProperties: GenericPropertyValues<keyof this | PrivateProps>) {
+    this.executeObservers(changedProperties);
+
+    if (changedProperties.has('selected') && changedProperties.get('selected') !== this.selected) {
+      const eventName = typeof this.selected === 'undefined' ? 'exmg-combobox-deselect' : 'exmg-combobox-select';
+      this.dispatchEvent(new CustomEvent(eventName, {detail: this.selected, composed: true, bubbles: true}));
+    }
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.inputElement && this.inputElement.removeEventListener('keydown', this.onKeyDown);
+    if (this.autoValidate) {
+      window.removeEventListener('click', this.onClick);
+    }
+  }
+
+  protected render() {
+    return html`
+      ${this.getTemplate()}
+    `;
+  }
+
+  private getTemplate() {
+    // noinspection CssUnresolvedCustomPropertySet
     return html`
       <style>
         :host {
@@ -253,7 +507,7 @@ export class PaperComboboxElement extends LitElement {
       <div class="container">
         <paper-input-container
           ?always-float-label="${this.computeAlwaysFloatLabel()}"
-          @tap="${this.handleContainerTap}"
+          @tap="${this.onContainerTap}"
           ?disabled="${this.disabled}"
           ?focused="${this.inputFocused}"
           @focused-changed="${this.onInputFocusChanged}"
@@ -267,7 +521,7 @@ export class PaperComboboxElement extends LitElement {
                 id="inputValue"
                 aria-labelledby="label"
                 value="${this.inputValue}"
-                @input="${this.onValueInput}"
+                @input="${this.onInputValueChange}"
                 ?autofocus="${this.autofocus}"
                 autocomplete="off"
                 ?disabled="${this.disabled}">
@@ -300,258 +554,12 @@ export class PaperComboboxElement extends LitElement {
     `;
   }
 
-  @query('#listbox')
-  private listBox?: PaperListboxElement;
-
-  @query('#inputValue')
-  private inputElement?: HTMLInputElement;
-
-  @query('#inputWidthHelper')
-  private inputWidthHelperElement?: HTMLElement;
-
-  private previousInsideClick: boolean = false;
-
-  private opened: boolean = false;
-
-  private ignoreFocus: boolean = false;
-
-  constructor() {
-    super();
-    this.handleKeyDown = this.handleKeyDown.bind(this);
-    this.handleClick = this.handleClick.bind(this);
-  }
-
-  private observeInputChange() {
-    if (this.inputElement && this.inputWidthHelperElement) {
-      this.inputElement.style.width = `${(this.inputWidthHelperElement.offsetWidth + 10)}px`;
-    }
-
-    this.filterItems();
-  }
-
-  filterItems() {
-    const items: NodeListOf<HTMLElement> = this.querySelectorAll('paper-item, paper-icon-item');
-    const hasFilterPhrase = this.inputValue.length > 0;
-
-    items.forEach(item => {
-      if (hasFilterPhrase && item.textContent &&  item.textContent.indexOf(this.inputValue) === -1) {
-        item.setAttribute('hidden', '');
-      } else {
-        item.removeAttribute('hidden');
-      }
-    });
-  }
-
-  private observeSelectedItem() {
-    console.log('observable selected items');
-    if (!this.selectedItem) {
-      this.token = undefined;
-      return;
-    }
-
-    const id = this.getSelectedItemKey(this.selectedItem);
-    const selectedItemSelector = '';
-    const content: Element | null = this.selectedItemSelector ?
-        this.selectedItem.querySelector(selectedItemSelector) :
-        this.selectedItem;
-
-    const text = (content && content.textContent) || '';
-
-    this.token = {id, text};
-  }
-
-  handleTokenClick() {
-    this.focus();
-  }
-
-  indexOf(item: any): number {
-    return this.listBox && this.listBox.items ? this.listBox.items.indexOf(item) : -1;
-  }
-
-  private getSelectedItemKey(selectedItem: Element): number | string {
-    return this.attrForSelected ?
-        selectedItem.getAttribute(this.attrForSelected) || -1 :
-        this.indexOf(selectedItem);
-  }
-
-  private handleClick(e: Event): void {
-    const inside: boolean = isEventWithPath(e) ? !!e.path && !!e.path.find((path) => path === this) : false;
-    console.log('handle click', {
-      prev: this.previousInsideClick,
-      curr: inside,
-      token: this.token,
-      av: this.autoValidate,
-      expr: (this.autoValidate && (this.previousInsideClick && !inside) || this.token),
-    });
-    // Detect outside element click for auto validate input
-    if (this.autoValidate && (this.previousInsideClick && !inside) || this.token) {
-      this.validate();
-    }
-
-    this.previousInsideClick = inside;
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    /* Initialize the input helper span element for determining the actual width of the input
-      text. This width will be used to create a dynamic width on the input field */
-    if (this.inputWidthHelperElement) {
-      copyElementStyle(this.inputElement!, this.inputWidthHelperElement);
-      this.inputWidthHelperElement.style.position = 'absolute';
-      this.inputWidthHelperElement.style.top = '-999px';
-      this.inputWidthHelperElement.style.left = '0';
-      this.inputWidthHelperElement.style.padding = '0';
-      this.inputWidthHelperElement.style.width = 'auto';
-      this.inputWidthHelperElement.style.whiteSpace = 'pre';
-    }
-
-    this.inputElement && this.inputWidthHelperElement!.addEventListener('keydown', this.handleKeyDown);
-
-    if (this.autoValidate) {
-      window.addEventListener('click', this.handleClick);
-    }
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.inputElement && this.inputElement.removeEventListener('keydown', this.handleKeyDown);
-    if (this.autoValidate) {
-      window.removeEventListener('click', this.handleClick);
-    }
-  }
-
-  private handleKeyDown(e: KeyboardEvent) {
-    if (!this.inputValue) {
-      this.inputValue = '';
-    }
-    e.keyCode;
-    switch (e.keyCode) {
-      case BACKSPACE:
-      case DELETE:
-        this.opened = true;
-        this.selectedValue = undefined;
-        this.selectedItem = undefined;
-        afterNextRender(this, () => this.focus());
-        break;
-      case ARROWDOWN:
-        this.opened = true;
-        this.listBox!.focus();
-        break;
-    }
-  }
-
-  private hasSelectedItem(): boolean {
-    return !!this.selectedItem;
-  }
-
-  /**
-    * this method can be used to set the focus of the element
-    *
-    * @method indexOf
-    */
-  focus() {
-    this.inputElement!.focus();
-  }
-
-  /**
-    * This method will automatically set the label float.
-    */
-  private computeAlwaysFloatLabel(): boolean {
-    if (this.alwaysFloatLabel) {
-      return true;
-    }
-    return !(!this.token && this.inputElement !== document.activeElement);
-  }
-
-  handleContainerTap(): void {
-    this.opened = true;
-    afterNextRender(this, () => this.focus());
-  }
-
-  private onItemSelected(e: CustomEvent<{item: Element}>): void {
-    console.log('on selected item', e);
-    this.selectedItem = e.detail.item;
-    // @todo set this.selected check it is correct
-    this.selected = this.getSelectedItemKey(this.selectedItem);
-
-    e.stopPropagation();
-    this.resetInput();
-    // this.observeSelectedItem(this.selectedItem);
-  }
-
-  private onMenuButtonOpen(e: Event): void {
-    this.opened = true;
-    e.preventDefault();
-  }
-
-  private onMenuButtonClose(e: Event): void {
-    this.opened = false;
-    e.preventDefault();
-  }
-
-  private onValueInput(e: Event): void {
-    this.inputValue = (<HTMLInputElement>e.target).value;
-    // this.observeInputChange();
-  }
-
-  private resetInput() {
-    console.log('reset input');
-    if (this.autoValidate) {
-      this.validate();
-    }
-
-    this.inputValue = '';
-    if (this.ignoreFocus) {
-      this.ignoreFocus = false;
-    } else {
-      this.focus();
-    }
-  }
-
-  /**
-  * Returns true if `value` is valid.
-  * @return {boolean} True if the value is valid.
-  */
-  validate(): boolean {
-    this.invalid = this.required && !this.hasSelectedItem();
-    return !this.invalid;
-  }
-
-  private onInputFocusChanged(event: CustomEvent): void {
-    console.log('input focus changed', this.inputFocused, event);
-    this.inputFocused = event.detail.value;
-  }
-
-  protected updated(changedProperties: GenericPropertyValues<keyof this | PrivateProps>) {
-    console.log('up', this.listBox!.selected, this.listBox!.selectedValues, this.listBox!.attrForSelected);
-    if (changedProperties.has('selectedItem')) {
-      // this.observeSelectedItem();
-      this.dispatchEvent(new CustomEvent('on-selected-item', {detail: this.selectedItem, composed: true, bubbles: true}));
-    }
-
-    const observables = this.getObservers();
-    Object.entries(observables).forEach(([key, cb]) => {
-      if (changedProperties.has(<any>key)) {
-        cb();
-      }
-    });
-
-    // @ts-ignore
-    const changed  = Array.from(changedProperties.entries()).reduce((acc: object, [key, value]) => ({[key]: {prev: value, cur: this[key]}, ...acc}), {});
-    console.log('updated', changed, this.listBox!.items);
-  }
   private renderTokenButton() {
     if (!this.token) {
       return null;
     }
 
-    return html`<paper-button tabindex="-1" @click="${this.handleTokenClick}"><span>${this.token!.text}</span></paper-button>`;
-  }
-
-  protected render() {
-    return html`
-      ${this.template()}
-    `;
+    return html`<paper-button tabindex="-1" @click="${this.onTokenClick}"><span>${this.token!.text}</span></paper-button>`;
   }
 }
 

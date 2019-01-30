@@ -9,3 +9,8 @@ export interface EventWithPath extends Event {
 export const isEventWithPath = (event: any): event is EventWithPath => {
     return !!event && !!event.path && Array.isArray(event.path);
 };
+
+export type Token = {
+    id: number | string;
+    text: string;
+};

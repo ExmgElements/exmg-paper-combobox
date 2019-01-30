@@ -25,6 +25,21 @@
     <custom-style>
       <style is="custom-style" include="demo-pages-shared-styles"></style>
     </custom-style>
+    <script>
+      const handlerSelected = function(event) {
+        document.querySelector('#selected-value').setAttribute('value', event.detail);
+      };
+
+      const handlerDeselected = function() {
+        document.querySelector('#selected-value').removeAttribute('value');
+      };
+
+      window.addEventListener('load', () => {
+        const combobox = document.querySelector('#combobox');
+        combobox.addEventListener('exmg-combobox-select', handlerSelected);
+        combobox.addEventListener('exmg-combobox-deselect', handlerDeselected);
+      });
+    </script>
   </head>
   <body>
     <div class="vertical-section-container centered">
@@ -32,7 +47,8 @@
       <demo-snippet>
         <template>
           <h4>Selection-list</h4>
-          <exmg-paper-combobox label="Creatives" style="display:inline-block;">
+          <div>Select value is <input id="selected-value" readonly disabled placeholder="None"/></div>
+          <exmg-paper-combobox id="combobox" label="Creatives" style="display:inline-block;">
             <paper-item>Rubin</paper-item>
             <paper-item>Gennie</paper-item>
             <paper-item>Ronna</paper-item>

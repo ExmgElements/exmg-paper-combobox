@@ -18,7 +18,7 @@
     "url": "git@bitbucket.org:ExmgElements/exmg-paper-combobox.git"
   },
   "license": "MIT",
-  "main": "exmg-paper-combobox.ts",
+  "main": "exmg-paper-combobox.js",
   "files": [
     "typings/*",
     "exmg-*.js",
@@ -57,12 +57,13 @@
     "web-animations-js": "^2.3.1"
   },
   "scripts": {
-    "gen-docs": "typedoc --excludeNotExported --excludeExternals --excludePrivate --excludeProtected --ignoreCompilerErrors --exclude '{**/*test*,**/node_modules/**,**/test/**}' --out docs/ src/chart/*.ts",
+    "gen-docs": "typedoc --excludeNotExported --excludeExternals --excludePrivate --excludeProtected --ignoreCompilerErrors --exclude '{**/*test*,**/node_modules/**,**/test/**}' --out docs/ *.ts",
     "build": "npm run lint && npm run tsc",
     "tsc": "tsc -b",
     "prepare": "npm run build",
     "start": "gulp serve",
     "lint": "polymer lint && tslint -c ./tslint.json --project ./",
+    "test-dev": "polymer test -l chrome -p",
     "test2": "polymer test",
     "test2:integration": "polymer build # test that psk builds without error with the CLI"
   }
