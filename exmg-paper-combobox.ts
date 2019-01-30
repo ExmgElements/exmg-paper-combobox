@@ -231,9 +231,15 @@ export class PaperComboboxElement extends LitElement {
     }
 
     const id = this.getSelectedItemKey(this.selectedItem);
-    const selectedItemSelector = '';
+    if (typeof id === 'undefined') {
+      this.selectedValue = undefined;
+      this.selectedItem = undefined;
+      this.token = undefined;
+      return;
+    }
+
     const content: Element | null = this.selectedItemSelector ?
-        this.selectedItem.querySelector(selectedItemSelector) :
+        this.selectedItem.querySelector(this.selectedItemSelector) :
         this.selectedItem;
 
     const text = (content && content.textContent) || '';
@@ -258,9 +264,9 @@ export class PaperComboboxElement extends LitElement {
     return this.listBox && this.listBox.items ? this.listBox.items.indexOf(item) : -1;
   }
 
-  private getSelectedItemKey(selectedItem: Element): number | string {
+  private getSelectedItemKey(selectedItem: Element): number | string | undefined {
     return this.attrForSelected ?
-        selectedItem.getAttribute(this.attrForSelected) || -1 :
+        selectedItem.getAttribute(this.attrForSelected) || undefined :
         this.indexOf(selectedItem);
   }
 
@@ -270,8 +276,6 @@ export class PaperComboboxElement extends LitElement {
 
   /**
     * this method can be used to set the focus of the element
-    *
-    * @method indexOf
     */
   focus() {
     this.inputElement!.focus();
@@ -342,7 +346,8 @@ export class PaperComboboxElement extends LitElement {
     this.previousInsideClick = inside;
   }
 
-  private onContainerTap(): void {
+  private onContainerTap(e: Event): void {
+    e.preventDefault();
     this.menuElement!.open();
     afterNextRender(this, () => this.focus());
   }
@@ -408,7 +413,7 @@ export class PaperComboboxElement extends LitElement {
     this.executeObservers(changedProperties);
 
     if (changedProperties.has('selected') && changedProperties.get('selected') !== this.selected) {
-      const eventName = typeof this.selected === 'undefined' ? 'exmg-combobox-deselect' : 'exmg-combobox-select';
+      const eventName = (typeof this.selected === 'undefined' || this.selected === -1) ? 'exmg-combobox-deselect' : 'exmg-combobox-select';
       this.dispatchEvent(new CustomEvent(eventName, {detail: this.selected, composed: true, bubbles: true}));
     }
   }
