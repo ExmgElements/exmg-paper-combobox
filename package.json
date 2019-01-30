@@ -67,7 +67,7 @@
     "start": "gulp serve",
     "lint": "tslint -c ./tslint.json --project ./",
     "test-dev": "polymer test -l chrome -p",
-    "test2": "polymer test",
-    "test2:integration": "polymer build # test that psk builds without error with the CLI"
+    "test": "polymer test",
+    "test:integration": "polymer build # test that psk builds without error with the CLI"
   }
 }
