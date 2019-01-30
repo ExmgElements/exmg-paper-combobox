@@ -61,7 +61,7 @@
   "scripts": {
     "gen-docs": "typedoc --excludeNotExported --excludeExternals --excludePrivate --excludeProtected --ignoreCompilerErrors --exclude '{**/*test*,**/node_modules/**,**/test/**}' --out docs/ *.ts",
     "build": "npm run lint && npm run tsc",
-    "tsc": "tsc -b",
+    "tsc": "tsc -b ./tsconfig.json",
     "prepublishOnly": "npm run build",
     "preversion": "npm run build",
     "start": "gulp serve",
