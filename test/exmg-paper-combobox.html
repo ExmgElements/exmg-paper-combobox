@@ -1,9 +1,16 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-  <title>exmg-paper-combobox</title>
-  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
-  <script src="../node_modules/wct-browser-legacy/browser.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+  <title>exmg-paper-combobox test</title>
+
+  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+  <script src="../node_modules/@polymer/test-fixture/test-fixture.js"></script>
+  <script src="../node_modules/mocha/mocha.js"></script>
+  <script src="../node_modules/chai/chai.js"></script>
+  <script src="../node_modules/wct-mocha/wct-mocha.js"></script>
 
   <script type="module" src="../exmg-paper-combobox.js"></script>
 </head>
@@ -15,7 +22,7 @@
   </test-fixture>
   <test-fixture id="ExmgPaperComboboxList">
     <template>
-      <exmg-paper-combobox label="Creatives" selected="{{creativesToAdd}}" required>
+      <exmg-paper-combobox label="Creatives" selected="1" required>
         <paper-item>Rubin</paper-item>
         <paper-item>Gennie</paper-item>
         <paper-item>Ronna</paper-item>
@@ -31,7 +38,7 @@
   </test-fixture>
   <test-fixture id="ExmgPaperComboboxListWithSelection">
     <template>
-      <exmg-paper-combobox label="Creatives" selected="{{creativesToAdd}}" attr-for-selected="data-id" selected-value="[6007]" required>
+      <exmg-paper-combobox label="Creatives" selected="6007" attr-for-selected="data-id" required>
         <paper-item data-id="1001">Rubin</paper-item>
         <paper-item data-id="1012">Gennie</paper-item>
         <paper-item data-id="1403">Ronna</paper-item>
@@ -64,66 +71,110 @@
     </template>
   </test-fixture>
   <script type="module">
-    suite('<exmg-paper-combobox>', () => {
+    import {PaperComboboxElement} from '../exmg-paper-combobox';
+    import {promisifyFlush, onExmgComboboxSelected, onExmgComboboxDeselected} from './utils';
+
+    const flushCompleted = promisifyFlush(flush);
+
+    suite('<exmg-paper-combobox>', function() {
+      /**
+       * @type PaperComboboxElement
+       */
       let element;
 
-      const timePasses = (ms) => {
-        return new Promise((resolve) => {
-          window.setTimeout(_ => {
-            resolve();
-          }, ms);
-        });
-      };
-
-      suite('basic usage', () => {
-        test('element is upgraded', () => {
+      suite('basic usage', function() {
+        test('element is upgraded', function() {
           element = fixture('ExmgPaperComboboxBasicElement');
-          assert.equal(element.constructor.is, 'exmg-paper-combobox');
+          chai.assert.instanceOf(element, PaperComboboxElement);
         });
 
-        test('setting label on elment sets the Label value', (done) => {
+        test('setting label on element sets the Label value', async () => {
           element = fixture('ExmgPaperComboboxBasicElement');
           const elementShadowRoot = element.shadowRoot;
           element.label = 'foobar';
+          await flushCompleted();
 
           const labelValue = elementShadowRoot.querySelector('label').innerHTML;
-          assert.equal(labelValue === 'foobar', true);
-          done();
+          chai.assert.include(labelValue, 'foobar', 'Label is set properly');
         });
 
-        test('element has list of element when adding children', (done) => {
+        test('element has label', async () => {
           element = fixture('ExmgPaperComboboxList');
           const elementShadowRoot = element.shadowRoot;
+          await flushCompleted();
 
-          const listBox = elementShadowRoot.querySelector('paper-listbox');
-          assert.isArray(listBox.items, 'Should be an array');
-          done();
+          const labelValue = elementShadowRoot.querySelector('label').innerHTML;
+          chai.assert.include(labelValue, 'Creatives', 'Label is set properly');
         });
 
-        test('element has list of element when adding children', (done) => {
+        test('element has list of element when adding children', async () => {
+          element = fixture('ExmgPaperComboboxList');
+          const elementShadowRoot = element.shadowRoot;
+          await flushCompleted();
+
+          const listBox = elementShadowRoot.querySelector('paper-listbox');
+          chai.assert.isArray(listBox.items, 'Should be an array');
+        });
+
+        test('element has selected value', async () => {
           element = fixture('ExmgPaperComboboxListWithSelection');
           const elementShadowRoot = element.shadowRoot;
+          await flushCompleted();
 
           const listBox = elementShadowRoot.querySelector('paper-listbox');
-          assert.isNotNull(listBox.selected, 'Should be an object');
-          done();
+          const expectedSelectedItemText = 'Ginny';
+          const expectedSelectedItemValue = '6007';
+          chai.assert.isNotNull(listBox.selected, 'Should be an object');
+          chai.assert.equal(listBox.selected, expectedSelectedItemValue);
+          chai.assert.lengthOf(listBox.selectedItems, 1);
+          chai.assert.equal(listBox.selectedItems[0].innerText, expectedSelectedItemText, 'Selected item should match with item text');
+          const paperButton = elementShadowRoot.querySelector('paper-button');
+          chai.assert.equal(paperButton.innerText, expectedSelectedItemText.toUpperCase(), 'Button token should match with item text');
         });
 
-        test('element has list of element when adding children', (done) => {
+        test('element should trigger event exmg-combobox-select', async () => {
+          element = fixture('ExmgPaperComboboxListWithSelection');
+          const event = await onExmgComboboxSelected(element);
+          chai.assert.instanceOf(event, CustomEvent);
+          chai.assert.equal(event.detail, '6007', 'Should be triggered event with initial value');
+          setTimeout(() => {
+            element.selected = '1403';
+          });
+          const event2 = await onExmgComboboxSelected(element);
+          chai.assert.equal(event2.detail, '1403', 'Should be triggered event with new selection');
+        });
+
+        test('element should trigger event exmg-combobox-deselect', async () => {
+          element = fixture('ExmgPaperComboboxListWithSelection');
+          setTimeout(() => {
+            element.selected = undefined;
+          });
+          const event = await onExmgComboboxDeselected(element);
+          chai.assert.instanceOf(event, CustomEvent);
+          chai.assert.equal(event.detail, undefined, 'Should be triggered event with undefined value');
+        });
+
+        test('element is required', async () => {
           element = fixture('ExmgPaperComboboxRequired');
-          const elementShadowRoot = element.shadowRoot;
+          await flushCompleted();
 
-          assert.isTrue(element.required, 'Should be true');
-          done();
+          chai.assert.isTrue(element.required, 'Should be true');
+          chai.assert.isFalse(element.invalid, 'Should be valid when not touched');
+          element.validate();
+          await flushCompleted();
+          chai.assert.isTrue(element.invalid, 'Should be invalid');
+          const inputError = element.shadowRoot.querySelector('paper-input-error');
+          chai.assert.equal(inputError.innerText, 'Input required', 'Error message is visible');
         });
 
-        test('element has list of element when adding children', (done) => {
+        test('element has disabled input', async () => {
           element = fixture('ExmgPaperComboboxDisabled');
-          const elementShadowRoot = element.shadowRoot;
+          await flushCompleted();
 
+          const elementShadowRoot = element.shadowRoot;
           const paperContainer = elementShadowRoot.querySelector('input');
-          assert.isTrue(paperContainer.disabled, 'Should be true');
-          done();
+          chai.assert.isTrue(paperContainer.disabled, 'Should be true');
+          chai.assert.isTrue(element.disabled, 'Should be true');
         });
       });
     });

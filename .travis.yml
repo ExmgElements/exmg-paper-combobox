@@ -8,12 +8,10 @@ cache:
 
 install:
 - npm install
-- npm i bower
 - npm i polymer-cli
 
 before_script:
-- polymer lint --rules polymer-3 --input *.html
-- eslint . --ext js,html --ignore-path .gitignore
+- npm run build
 
 addons:
  firefox: latest
@@ -24,6 +22,6 @@ addons:
      - google-chrome-stable
 
 script:
-- xvfb-run polymer test
+- xvfb-run npm run test
 
 dist: trusty

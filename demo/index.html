@@ -4,9 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
 
-    <title>exmg-long-ago demo</title>
+    <title>exmg-paper-combobox demo</title>
 
     <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../node_modules/@webcomponents/shadycss/apply-shim.min.js"></script>
 
     <script type="module" src="../node_modules/@polymer/iron-demo-helpers/demo-pages-shared-styles.js"></script>
     <script type="module" src="../node_modules/@polymer/iron-demo-helpers/demo-snippet.js"></script>
@@ -17,13 +18,28 @@
     <script type="module" src="../node_modules/@polymer/paper-item/paper-icon-item.js"></script>
 
     <!-- Ensure Web Animations polyfill is loaded -->
-    <script src="../node_modules//web-animations-js/web-animations-next-lite.min.js"></script>
+    <script src="../node_modules/web-animations-js/web-animations-next-lite.min.js"></script>
 
     <script type="module" src="../exmg-paper-combobox.js"></script>
 
     <custom-style>
       <style is="custom-style" include="demo-pages-shared-styles"></style>
     </custom-style>
+    <script>
+      const handlerSelected = function(event) {
+        document.querySelector('#selected-value').setAttribute('value', event.detail);
+      };
+
+      const handlerDeselected = function() {
+        document.querySelector('#selected-value').removeAttribute('value');
+      };
+
+      window.addEventListener('load', () => {
+        const combobox = document.querySelector('#combobox');
+        combobox.addEventListener('exmg-combobox-select', handlerSelected);
+        combobox.addEventListener('exmg-combobox-deselect', handlerDeselected);
+      });
+    </script>
   </head>
   <body>
     <div class="vertical-section-container centered">
@@ -31,7 +47,8 @@
       <demo-snippet>
         <template>
           <h4>Selection-list</h4>
-          <exmg-paper-combobox label="Creatives" style="display:inline-block;">
+          <div>Select value is <input id="selected-value" readonly disabled placeholder="None"/></div>
+          <exmg-paper-combobox id="combobox" label="Creatives" style="display:inline-block;">
             <paper-item>Rubin</paper-item>
             <paper-item>Gennie</paper-item>
             <paper-item>Ronna</paper-item>
@@ -62,7 +79,7 @@
       <h3>Basic exmg-paper-combobox demo through dom-repeat and images</h3>
       <demo-snippet>
         <template>
-          <exmg-paper-combobox label="Creatives" selected="{{creativesToAdd}}" attr-for-selected="data-id" required="">
+          <exmg-paper-combobox label="Creatives" selected="4309" attr-for-selected="data-id" required="">
             <paper-icon-item data-id="1001">
               <iron-icon src="https://s3.amazonaws.com/uifaces/faces/twitter/sebasribas/73.jpg" slot="item-icon"></iron-icon>
               <paper-item-body>
