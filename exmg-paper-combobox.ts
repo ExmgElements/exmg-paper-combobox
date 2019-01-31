@@ -14,7 +14,7 @@ import '@polymer/paper-styles/paper-styles';
 import './exmg-paper-combobox-icons';
 import {afterNextRender} from '@polymer/polymer/lib/utils/render-status';
 
-import {GenericPropertyValues, isEventWithPath, Token} from './exmg-custom-types';
+import {EventSelectPayload, GenericPropertyValues, isEventWithPath, Token} from './exmg-custom-types';
 import {PaperMenuButton} from "@polymer/paper-menu-button/paper-menu-button"; /* It is repeated on purpose otherwise element won't works */ // tslint:disable-line
 import  {PaperListboxElement} from '@polymer/paper-listbox/paper-listbox'; /* It is repeated on purpose otherwise element won't works */ // tslint:disable-line
 
@@ -36,8 +36,9 @@ const copyElementStyle = (source: HTMLElement, target: HTMLElement): void  => {
 (window as any).Exmg = (window as any).Exmg || {};
 
 const BACKSPACE = 8;
-const ARROWDOWN = 40;
+const ARROW_DOWN = 40;
 const DELETE = 127;
+const ESC = 27;
 
 /**
 * `exmg-paper-combobox` is an wrapper element to make list data selectable.
@@ -66,8 +67,8 @@ const DELETE = 127;
 * @memberof Exmg
 * @extends LitElement
 * @summary Paper Combobox Element
-* @eventType exmg-combobox-select - detail is equal to this.selected value
-* @eventType exmg-combobox-deselect - detail is equal to undefined
+* @eventType exmg-combobox-select - detail is type EventSelectPayload
+* @eventType exmg-combobox-deselect - detail undefined
 */
 @customElement('exmg-paper-combobox')
 export class PaperComboboxElement extends LitElement {
@@ -95,15 +96,15 @@ export class PaperComboboxElement extends LitElement {
    * Returns currently selected item.
    * @type {?Object}
    */
-  @property({type: Object, attribute: 'selected-item'}) selectedItem?: Element; // @todo notify
+  @property({type: Object, attribute: 'selected-item'}) selectedItem?: Element;
 
   /**
    * Gets or sets the selected element. The default is to use the index of the item.
    * @type {string|number}
    */
-  @property({type: String}) selected?: string | number; // @todo notify: true, observe: _observeSelected
+  @property({type: String}) selected?: string | number;
 
-  @property({type: String, attribute: 'selected-value'}) private selectedValue?: string | number; // @todo observe: _observeSelectedValue
+  @property({type: String, attribute: 'selected-value'}) private selectedValue?: string | number;
 
   /**
    * The label for this input.
@@ -209,7 +210,15 @@ export class PaperComboboxElement extends LitElement {
       this.inputElement.style.width = `${(this.inputWidthHelperElement.offsetWidth + 10)}px`;
     }
 
-    this.filterItems();
+    const isAnyItemActive = this.filterItems();
+    if (this.menuElement) {
+      if (!this.menuElement.opened && isAnyItemActive) {
+        this.menuElement.open();
+        afterNextRender(this, () => this.focus());
+      } else if (this.menuElement.opened && !isAnyItemActive) {
+        this.menuElement.close();
+      }
+    }
   }
 
   private observeSelectedValue(): void {
@@ -231,7 +240,7 @@ export class PaperComboboxElement extends LitElement {
     }
 
     const id = this.getSelectedItemKey(this.selectedItem);
-    if (typeof id === 'undefined') {
+    if (typeof id === 'undefined' || id === -1) {
       this.selectedValue = undefined;
       this.selectedItem = undefined;
       this.token = undefined;
@@ -247,17 +256,22 @@ export class PaperComboboxElement extends LitElement {
     this.token = {id, text};
   }
 
-  filterItems() {
+  filterItems(): boolean {
     const items: NodeListOf<HTMLElement> = this.querySelectorAll('paper-item, paper-icon-item');
     const hasFilterPhrase = !!this.inputValue && this.inputValue.length > 0;
+    const phrase = hasFilterPhrase ? this.inputValue.toLowerCase() : '';
+    let isAnyItemActive = false;
 
     items.forEach(item => {
-      if (hasFilterPhrase && item.textContent &&  item.textContent.indexOf(this.inputValue || '') === -1) {
+      if (hasFilterPhrase && item.textContent &&  item.textContent.toLowerCase().indexOf(phrase) === -1) {
         item.setAttribute('hidden', '');
       } else {
+        isAnyItemActive = true;
         item.removeAttribute('hidden');
       }
     });
+
+    return isAnyItemActive;
   }
 
   indexOf(item: any): number {
@@ -289,7 +303,7 @@ export class PaperComboboxElement extends LitElement {
       return true;
     }
 
-    return !(!this.token && this.inputElement !== document.activeElement);
+    return !!this.token || this.inputFocused;
   }
 
   private resetInput(): void {
@@ -298,6 +312,7 @@ export class PaperComboboxElement extends LitElement {
     }
 
     this.inputValue = '';
+    this.inputElement!.value = '';
     if (this.ignoreFocus) {
       this.ignoreFocus = false;
     } else {
@@ -310,28 +325,36 @@ export class PaperComboboxElement extends LitElement {
    * @return {boolean} True if the value is valid.
    */
   validate(): boolean {
-    this.invalid = this.required && !this.hasSelectedItem();
+    this.invalid = !this.disabled && this.required && !this.hasSelectedItem();
     return !this.invalid;
   }
 
   /************ EVENT HANDLERS *************/
   private onKeyDown(e: KeyboardEvent): void {
-    if (!this.inputValue) {
+    if (typeof this.inputValue !== 'string') {
       this.inputValue = '';
     }
 
-    switch (e.keyCode) {
+    switch (e.code || e.keyCode) {
       case BACKSPACE:
+      case 'Backspace':
       case DELETE:
-        this.opened = true;
+      case 'Delete':
+        this.menuElement!.open();
         this.selectedValue = undefined;
         this.selectedItem = undefined;
         afterNextRender(this, () => this.focus());
         break;
-      case ARROWDOWN:
-        this.opened = true;
-        this.listBox!.focus();
+      case ARROW_DOWN:
+      case 'ArrowDown':
+        this.menuElement!.open();
+        afterNextRender(this, () => this.listBox!.focus());
         break;
+      case ESC:
+      case 'Esc':
+        e.preventDefault();
+        this.menuElement!.close();
+        afterNextRender(this, () => this.focus());
     }
   }
 
@@ -358,6 +381,23 @@ export class PaperComboboxElement extends LitElement {
     this.selected = this.getSelectedItemKey(this.selectedItem);
 
     this.resetInput();
+  }
+
+  private onItemDeselected(e: Event): void {
+    e.stopPropagation();
+    this.selectedItem = undefined;
+    this.selected = undefined;
+
+    this.resetInput();
+  }
+
+  private onItemActivated(e: CustomEvent<{selected: string | number}>): void {
+    // when user select same item then don't receive iron-select event but we still want to
+    // prepare input
+    if (this.selected === e.detail.selected) {
+      this.ignoreFocus = false;
+      afterNextRender(this, () => this.resetInput());
+    }
   }
 
   private onMenuButtonOpen(e: Event): void {
@@ -403,18 +443,42 @@ export class PaperComboboxElement extends LitElement {
     }
   }
 
+  private shouldFireEvent(changedProperties: GenericPropertyValues<keyof this | PrivateProps>): boolean {
+    const props: (keyof this | PrivateProps)[] = ['selected', 'selectedItem'];
+    const anyPropChanged = props.some((it: keyof this | PrivateProps) =>
+      // @ts-ignore
+      changedProperties.has(it) && changedProperties.get(it) !== this[it]
+    );
+
+    const {id = undefined} = this.token || {};
+
+    return (anyPropChanged && id === this.selected);
+  }
+
   /*****  LIT ELEMENT HOOKS ******/
 
   protected firstUpdated(): void {
     this.initializeElement();
   }
 
-  protected updated(changedProperties: GenericPropertyValues<keyof this | PrivateProps>) {
+  protected update(changedProperties: GenericPropertyValues<keyof this | PrivateProps>): void {
     this.executeObservers(changedProperties);
+    super.update(changedProperties);
+  }
 
-    if (changedProperties.has('selected') && changedProperties.get('selected') !== this.selected) {
-      const eventName = (typeof this.selected === 'undefined' || this.selected === -1) ? 'exmg-combobox-deselect' : 'exmg-combobox-select';
-      this.dispatchEvent(new CustomEvent(eventName, {detail: this.selected, composed: true, bubbles: true}));
+  protected updated(changedProperties: GenericPropertyValues<keyof this | PrivateProps>) {
+    if (this.shouldFireEvent(changedProperties)) {
+      if (!(typeof this.selected === 'undefined' || this.selected === -1)) {
+        const payload: EventSelectPayload = {
+          value: this.selected!,
+          item: this.selectedItem!,
+          token: this.token!,
+        };
+
+        this.dispatchEvent(new CustomEvent('exmg-combobox-select', {detail: payload, composed: true, bubbles: true}));
+      } else {
+        this.dispatchEvent(new CustomEvent('exmg-combobox-deselect', {composed: true, bubbles: true}));
+      }
     }
   }
 
@@ -550,8 +614,9 @@ export class PaperComboboxElement extends LitElement {
             attr-for-selected="${this.attrForSelected}"
             selected="${this.selectedValue}"
             class="dropdown-content"
+            @iron-activate="${this.onItemActivated}"
             @iron-select="${this.onItemSelected}"
-            @iron-deselect="${this.resetInput}">
+            @iron-deselect="${this.onItemDeselected}">
             <slot></slot>
           </paper-listbox>
         </paper-dropdown-menu>

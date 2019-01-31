@@ -14,3 +14,9 @@ export type Token = {
     id: number | string;
     text: string;
 };
+
+export type EventSelectPayload = {
+  value: number | string;
+  item: Element;
+  token: Token;
+};
