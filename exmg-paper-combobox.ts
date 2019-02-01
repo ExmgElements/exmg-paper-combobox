@@ -19,6 +19,9 @@ import {PaperMenuButton} from "@polymer/paper-menu-button/paper-menu-button"; /*
 import  {PaperListboxElement} from '@polymer/paper-listbox/paper-listbox'; /* It is repeated on purpose otherwise element won't works */ // tslint:disable-line
 
 type PrivateProps = 'inputValue' | 'selectedValue';
+type Props = Exclude<keyof PaperComboboxElement, number | Symbol> | PrivateProps;
+
+type ChangedProps = GenericPropertyValues<Props>;
 
 const copyElementStyle = (source: HTMLElement, target: HTMLElement): void  => {
   const computedStyle = window.getComputedStyle(source, null);
@@ -39,6 +42,17 @@ const BACKSPACE = 8;
 const ARROW_DOWN = 40;
 const DELETE = 127;
 const ESC = 27;
+
+const debounce  = (time: number) => {
+  let timer: number;
+
+  return (cb?: Function): void => {
+    clearTimeout(timer);
+    if (cb) {
+      timer = window.setTimeout(cb, time);
+    }
+  };
+};
 
 /**
 * `exmg-paper-combobox` is an wrapper element to make list data selectable.
@@ -104,7 +118,13 @@ export class PaperComboboxElement extends LitElement {
    */
   @property({type: String}) selected?: string | number;
 
-  @property({type: String, attribute: 'selected-value'}) private selectedValue?: string | number;
+  /**
+   * Set custom max width of menu list with items
+   * @type {number = 200}
+   */
+  @property({type: Number, attribute: 'max-width-menu-list'}) maxWidthMenuList: number = 200;
+
+  @property({type: String}) private selectedValue?: string | number;
 
   /**
    * The label for this input.
@@ -175,12 +195,21 @@ export class PaperComboboxElement extends LitElement {
 
   private ignoreFocus: boolean = false;
 
+  private isAnyItemActive: boolean = true;
+
+  private isElementInitialized: boolean = false;
+
   private observers = this.getObservers();
+
+  private keyDownBackspaceDebounce = debounce(200);
+
+  private inputChangeDebounce = debounce(300);
 
   constructor() {
     super();
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onClick = this.onClick.bind(this);
+    this.onIronResize = this.onIronResize.bind(this);
   }
 
   /***************** OBSERVERS *******************/
@@ -188,7 +217,7 @@ export class PaperComboboxElement extends LitElement {
   /**
    * Register observed properties and actions to perform
    */
-  private getObservers(): Record<keyof this, Function> | Record<PrivateProps, Function> {
+  private getObservers(): {[K in Props]?: Function} {
     return {
       inputValue: () => this.observeInputChange(),
       selectedItem: () => this.observeSelectedItem(),
@@ -197,10 +226,10 @@ export class PaperComboboxElement extends LitElement {
     };
   }
 
-  private executeObservers(changedProperties: GenericPropertyValues<keyof this | PrivateProps>): void {
-    Object.entries(this.observers).forEach(([key, cb]) => {
-      if (changedProperties.has(<any>key)) {
-        cb();
+  private executeObservers(changedProperties: ChangedProps): void {
+    Object.entries<any>(this.observers).forEach(([key, cb]) => {
+      if (changedProperties.has(<Props>key)) {
+        cb(changedProperties);
       }
     });
   }
@@ -210,14 +239,23 @@ export class PaperComboboxElement extends LitElement {
       this.inputElement.style.width = `${(this.inputWidthHelperElement.offsetWidth + 10)}px`;
     }
 
-    const isAnyItemActive = this.filterItems();
-    if (this.menuElement) {
-      if (!this.menuElement.opened && isAnyItemActive) {
-        this.menuElement.open();
-        afterNextRender(this, () => this.focus());
-      } else if (this.menuElement.opened && !isAnyItemActive) {
-        this.menuElement.close();
-      }
+    if (!this.isElementInitialized) {
+      this.isAnyItemActive = this.filterItems();
+    }
+
+    if (this.isElementInitialized && this.menuElement) {
+      this.inputChangeDebounce(() => {
+        this.isAnyItemActive = this.filterItems();
+        this.onIronResize();
+
+        if (!this.menuElement!.opened && this.isAnyItemActive && !!this.inputValue) {
+          this.menuElement!.open();
+          afterNextRender(this, () => this.focus());
+        } else if (this.menuElement!.opened && !this.isAnyItemActive) {
+          this.menuElement!.close();
+        }
+
+      });
     }
   }
 
@@ -259,7 +297,7 @@ export class PaperComboboxElement extends LitElement {
   filterItems(): boolean {
     const items: NodeListOf<HTMLElement> = this.querySelectorAll('paper-item, paper-icon-item');
     const hasFilterPhrase = !!this.inputValue && this.inputValue.length > 0;
-    const phrase = hasFilterPhrase ? this.inputValue.toLowerCase() : '';
+    const phrase = hasFilterPhrase ? this.inputValue.toLowerCase().trim() : '';
     let isAnyItemActive = false;
 
     items.forEach(item => {
@@ -340,18 +378,27 @@ export class PaperComboboxElement extends LitElement {
       case 'Backspace':
       case DELETE:
       case 'Delete':
-        this.menuElement!.open();
+        if (!this.menuElement!.opened) {
+          this.keyDownBackspaceDebounce(() => {
+            if (!this.menuElement!.opened && this.isAnyItemActive) {
+              this.menuElement!.open();
+              afterNextRender(this, () => this.focus());
+            }
+          });
+        }
+
         this.selectedValue = undefined;
         this.selectedItem = undefined;
-        afterNextRender(this, () => this.focus());
         break;
       case ARROW_DOWN:
       case 'ArrowDown':
-        this.menuElement!.open();
+        if (!this.menuElement!.opened && this.isAnyItemActive) {
+          this.menuElement!.open();
+        }
         afterNextRender(this, () => this.listBox!.focus());
         break;
       case ESC:
-      case 'Esc':
+      case 'Escape':
         e.preventDefault();
         this.menuElement!.close();
         afterNextRender(this, () => this.focus());
@@ -441,6 +488,32 @@ export class PaperComboboxElement extends LitElement {
     if (this.autoValidate) {
       window.addEventListener('click', this.onClick);
     }
+
+    this.addEventListener('iron-resize', this.onIronResize);
+  }
+
+  /**
+   * Fix menu content width and height
+   */
+  private onIronResize(): void {
+    const element: HTMLElement = this.menuElement!.shadowRoot!.querySelector<HTMLElement>('.dropdown-content')!;
+
+    const {left: elementLeft} = element.getBoundingClientRect();
+    const {scrollWidth: elementScrollWidth} = element;
+    const getGreater = (...values: number[]): number  => Math.max(...values);
+    const getLower = (...values: number[]): number  => Math.min(...values);
+
+    if (elementScrollWidth > 0) {
+      const elementMaximumWidthFromRight = document.documentElement.clientWidth - elementLeft;
+      element.style.maxWidth = `${getLower(getGreater(elementMaximumWidthFromRight, 100), this.maxWidthMenuList)}px`;
+    }
+
+    const {top:  elementTop} = element.getBoundingClientRect();
+    const {scrollHeight: elementScrollHeight} = element;
+    if (elementScrollHeight > 0) {
+      const elementMaximumHeightToBottom = document.documentElement.clientHeight - elementTop;
+      element.style.maxHeight = `${getGreater(elementMaximumHeightToBottom - 10, 100)}px`;
+    }
   }
 
   private shouldFireEvent(changedProperties: GenericPropertyValues<keyof this | PrivateProps>): boolean {
@@ -457,16 +530,14 @@ export class PaperComboboxElement extends LitElement {
 
   /*****  LIT ELEMENT HOOKS ******/
 
-  protected firstUpdated(): void {
+  protected async firstUpdated(): Promise<void> {
     this.initializeElement();
+    await this.updateComplete;
+    this.isElementInitialized = true;
   }
 
-  protected update(changedProperties: GenericPropertyValues<keyof this | PrivateProps>): void {
+  protected updated(changedProperties: ChangedProps) {
     this.executeObservers(changedProperties);
-    super.update(changedProperties);
-  }
-
-  protected updated(changedProperties: GenericPropertyValues<keyof this | PrivateProps>) {
     if (this.shouldFireEvent(changedProperties)) {
       if (!(typeof this.selected === 'undefined' || this.selected === -1)) {
         const payload: EventSelectPayload = {
@@ -485,9 +556,12 @@ export class PaperComboboxElement extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this.inputElement && this.inputElement.removeEventListener('keydown', this.onKeyDown);
+    this.removeEventListener('iron-resize', this.onIronResize);
     if (this.autoValidate) {
       window.removeEventListener('click', this.onClick);
     }
+    this.inputChangeDebounce();
+    this.keyDownBackspaceDebounce();
   }
 
   protected render() {
