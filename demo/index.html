@@ -27,7 +27,8 @@
     </custom-style>
     <script>
       const handlerSelected = function(event) {
-        document.querySelector('#selected-value').setAttribute('value', event.detail);
+        const {value, token: {text}} = event.detail;
+        document.querySelector('#selected-value').setAttribute('value', `${value} - ${text}`);
       };
 
       const handlerDeselected = function() {
@@ -58,6 +59,47 @@
             <paper-item>Ginny</paper-item>
             <paper-item>Tiesha</paper-item>
             <paper-item>Leonore</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne + Evonne + Evonne + Evonne + Evonne + Evonne + Evonne + Evonne +EvonneEvonneEvonne Evonne Evonne Evonne Evonne Evonne Evonne Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
+            <paper-item>Evonne</paper-item>
             <paper-item>Evonne</paper-item>
           </exmg-paper-combobox>
 
@@ -109,7 +151,7 @@
             <paper-item>Gennie</paper-item>
             <paper-item>Ronna</paper-item>
           </exmg-paper-combobox>
-          <exmg-paper-combobox label="Select Users" disabled="">
+          <exmg-paper-combobox label="Select Users" disabled required>
             <paper-item>Rubin</paper-item>
             <paper-item>Gennie</paper-item>
             <paper-item>Ronna</paper-item>
