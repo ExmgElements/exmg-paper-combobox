@@ -1,22 +1,22 @@
 import {LitElement, html, customElement, property, query} from 'lit-element';
 import {classMap} from 'lit-html/directives/class-map';
 
-import '@polymer/paper-menu-button/paper-menu-button';
-import '@polymer/paper-listbox/paper-listbox';
-import '@polymer/paper-icon-button/paper-icon-button';
+import '@polymer/paper-menu-button/paper-menu-button.js';
+import '@polymer/paper-listbox/paper-listbox.js';
+import '@polymer/paper-icon-button/paper-icon-button.js';
 
-import '@polymer/iron-input/iron-input';
-import '@polymer/paper-input/paper-input-error';
-import '@polymer/paper-button/paper-button';
-import '@polymer/iron-flex-layout/iron-flex-layout';
-import '@polymer/paper-input/paper-input-container';
-import '@polymer/paper-styles/paper-styles';
-import './exmg-paper-combobox-icons';
-import {afterNextRender} from '@polymer/polymer/lib/utils/render-status';
+import '@polymer/iron-input/iron-input.js';
+import '@polymer/paper-input/paper-input-error.js';
+import '@polymer/paper-button/paper-button.js';
+import '@polymer/iron-flex-layout/iron-flex-layout.js';
+import '@polymer/paper-input/paper-input-container.js';
+import '@polymer/paper-styles/paper-styles.js';
+import './exmg-paper-combobox-icons.js';
+import {afterNextRender} from '@polymer/polymer/lib/utils/render-status.js';
 
 import {EventSelectPayload, GenericPropertyValues, isEventWithPath, Token} from './exmg-custom-types';
-import {PaperMenuButton} from "@polymer/paper-menu-button/paper-menu-button"; /* It is repeated on purpose otherwise element won't works */ // tslint:disable-line
-import  {PaperListboxElement} from '@polymer/paper-listbox/paper-listbox'; /* It is repeated on purpose otherwise element won't works */ // tslint:disable-line
+import {PaperMenuButton} from '@polymer/paper-menu-button/paper-menu-button';
+import  {PaperListboxElement} from '@polymer/paper-listbox/paper-listbox';
 
 type PrivateProps = 'inputValue' | 'selectedValue';
 type Props = Exclude<keyof PaperComboboxElement, number | Symbol> | PrivateProps;
@@ -199,11 +199,11 @@ export class PaperComboboxElement extends LitElement {
 
   private isElementInitialized: boolean = false;
 
-  private observers = this.getObservers();
+  private readonly observers: {[K in Props]?: Function} = this.getObservers();
 
-  private keyDownBackspaceDebounce = debounce(200);
+  private readonly keyDownBackspaceDebounce: (cb?: Function) => void = debounce(200);
 
-  private inputChangeDebounce = debounce(300);
+  private readonly inputChangeDebounce: (cb?: Function) => void  = debounce(300);
 
   constructor() {
     super();
@@ -227,8 +227,8 @@ export class PaperComboboxElement extends LitElement {
   }
 
   private executeObservers(changedProperties: ChangedProps): void {
-    Object.entries<any>(this.observers).forEach(([key, cb]) => {
-      if (changedProperties.has(<Props>key)) {
+    Object.entries(this.observers).forEach(([key, cb]) => {
+      if (cb && changedProperties.has(<Props>key)) {
         cb(changedProperties);
       }
     });
@@ -406,7 +406,7 @@ export class PaperComboboxElement extends LitElement {
   }
 
   private onClick(e: Event): void {
-    const inside: boolean = isEventWithPath(e) ? !!e.path && !!e.path.find((path) => path === this) : e.target === this;
+    const inside: boolean = isEventWithPath(e) ? !!e.path && !!e.composedPath().find((path) => path === this) : e.target === this;
 
     // Detect outside element click for auto validate input
     if (this.autoValidate && (this.previousInsideClick && !inside) || this.token) {
@@ -528,6 +528,14 @@ export class PaperComboboxElement extends LitElement {
     return (anyPropChanged && id === this.selected);
   }
 
+  private isSelectedValueEmpty(): boolean {
+    if (!this.attrForSelected && this.selected === -1) {
+      return true;
+    }
+
+    return typeof this.selected === 'undefined';
+  }
+
   /*****  LIT ELEMENT HOOKS ******/
 
   protected async firstUpdated(): Promise<void> {
@@ -539,7 +547,7 @@ export class PaperComboboxElement extends LitElement {
   protected updated(changedProperties: ChangedProps) {
     this.executeObservers(changedProperties);
     if (this.shouldFireEvent(changedProperties)) {
-      if (!(typeof this.selected === 'undefined' || this.selected === -1)) {
+      if (!this.isSelectedValueEmpty()) {
         const payload: EventSelectPayload = {
           value: this.selected!,
           item: this.selectedItem!,
