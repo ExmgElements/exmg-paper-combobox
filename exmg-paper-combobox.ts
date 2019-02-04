@@ -278,7 +278,7 @@ export class PaperComboboxElement extends LitElement {
     }
 
     const id = this.getSelectedItemKey(this.selectedItem);
-    if (typeof id === 'undefined' || id === -1) {
+    if (typeof id === 'undefined') {
       this.selectedValue = undefined;
       this.selectedItem = undefined;
       this.token = undefined;
@@ -317,9 +317,13 @@ export class PaperComboboxElement extends LitElement {
   }
 
   private getSelectedItemKey(selectedItem: Element): number | string | undefined {
-    return this.attrForSelected ?
-        selectedItem.getAttribute(this.attrForSelected) || undefined :
-        this.indexOf(selectedItem);
+    if (!!this.attrForSelected) {
+      return  selectedItem.getAttribute(this.attrForSelected) || undefined;
+    }
+
+    const index = this.indexOf(selectedItem);
+
+    return index ===  -1 ? undefined : index;
   }
 
   private hasSelectedItem(): boolean {
