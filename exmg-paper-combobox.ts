@@ -406,7 +406,7 @@ export class PaperComboboxElement extends LitElement {
   }
 
   private onClick(e: Event): void {
-    const inside: boolean = isEventWithPath(e) ? !!e.path && !!e.path.find((path) => path === this) : false;
+    const inside: boolean = isEventWithPath(e) ? !!e.path && !!e.path.find((path) => path === this) : e.target === this;
 
     // Detect outside element click for auto validate input
     if (this.autoValidate && (this.previousInsideClick && !inside) || this.token) {
@@ -503,7 +503,7 @@ export class PaperComboboxElement extends LitElement {
     const getGreater = (...values: number[]): number  => Math.max(...values);
     const getLower = (...values: number[]): number  => Math.min(...values);
 
-    if (elementScrollWidth > 0) {
+    if (elementScrollWidth > 0 && elementScrollWidth < this.maxWidthMenuList) {
       const elementMaximumWidthFromRight = document.documentElement.clientWidth - elementLeft;
       element.style.maxWidth = `${getLower(getGreater(elementMaximumWidthFromRight, 100), this.maxWidthMenuList)}px`;
     }
