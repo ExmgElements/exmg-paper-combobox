@@ -532,14 +532,6 @@ export class PaperComboboxElement extends LitElement {
     return (anyPropChanged && id === this.selected);
   }
 
-  private isSelectedValueEmpty(): boolean {
-    if (!this.attrForSelected && this.selected === -1) {
-      return true;
-    }
-
-    return typeof this.selected === 'undefined';
-  }
-
   /*****  LIT ELEMENT HOOKS ******/
 
   protected async firstUpdated(): Promise<void> {
@@ -551,7 +543,7 @@ export class PaperComboboxElement extends LitElement {
   protected updated(changedProperties: ChangedProps) {
     this.executeObservers(changedProperties);
     if (this.shouldFireEvent(changedProperties)) {
-      if (!this.isSelectedValueEmpty()) {
+      if (typeof this.selected !== 'undefined') {
         const payload: EventSelectPayload = {
           value: this.selected!,
           item: this.selectedItem!,
