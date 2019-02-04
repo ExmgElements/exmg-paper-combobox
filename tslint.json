@@ -1,5 +1,10 @@
 {
   "extends": [
     "tslint-config-exmg"
-  ]
+  ],
+  "linterOptions": {
+    "exclude": [
+      "test/**/*.ts"
+    ]
+  }
 }

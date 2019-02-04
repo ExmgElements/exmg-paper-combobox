@@ -65,7 +65,9 @@
     "prepublishOnly": "npm run build",
     "preversion": "npm run build",
     "start": "gulp serve",
-    "lint": "tslint -c ./tslint.json --project ./",
+    "lint-src": "tslint -c ./tslint.json --project ./",
+    "lint-test": "tslint -c ./test/tslint.json --project ./",
+    "lint": "npm run lint-src && npm run lint-test",
     "test-dev": "polymer test --npm -l chrome -p",
     "test": "polymer test --npm --expanded",
     "test:integration": "polymer build # test that psk builds without error with the CLI"
