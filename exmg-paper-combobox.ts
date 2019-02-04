@@ -323,7 +323,7 @@ export class PaperComboboxElement extends LitElement {
 
     const index = this.indexOf(selectedItem);
 
-    return index ===  -1 ? undefined : index;
+    return index === -1 ? undefined : index;
   }
 
   private hasSelectedItem(): boolean {
