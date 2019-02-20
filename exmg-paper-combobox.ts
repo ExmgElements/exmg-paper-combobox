@@ -157,6 +157,8 @@ export class PaperComboboxElement extends LitElement {
    */
   @property({type: Boolean}) required: boolean = false;
 
+  @property({type: String}) name?: string;
+
   /**
    * This field will be bind to the actual input field.
    */
@@ -210,6 +212,10 @@ export class PaperComboboxElement extends LitElement {
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onClick = this.onClick.bind(this);
     this.onIronResize = this.onIronResize.bind(this);
+  }
+
+  get value() {
+    return this.selectedValue;
   }
 
   /***************** OBSERVERS *******************/
@@ -508,14 +514,14 @@ export class PaperComboboxElement extends LitElement {
     const getLower = (...values: number[]): number  => Math.min(...values);
 
     if (elementScrollWidth > 0 && elementScrollWidth < this.maxWidthMenuList) {
-      const elementMaximumWidthFromRight = document.documentElement.clientWidth - elementLeft;
+      const elementMaximumWidthFromRight = document.documentElement!.clientWidth - elementLeft;
       element.style.maxWidth = `${getLower(getGreater(elementMaximumWidthFromRight, 100), this.maxWidthMenuList)}px`;
     }
 
     const {top:  elementTop} = element.getBoundingClientRect();
     const {scrollHeight: elementScrollHeight} = element;
     if (elementScrollHeight > 0) {
-      const elementMaximumHeightToBottom = document.documentElement.clientHeight - elementTop;
+      const elementMaximumHeightToBottom = document.documentElement!.clientHeight - elementTop;
       element.style.maxHeight = `${getGreater(elementMaximumHeightToBottom - 10, 100)}px`;
     }
   }
