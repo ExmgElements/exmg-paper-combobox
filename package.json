@@ -19,11 +19,6 @@
   },
   "license": "MIT",
   "main": "exmg-paper-combobox.js",
-  "files": [
-    "typings/*",
-    "exmg-*.js",
-    "exmg-*.d.ts"
-  ],
   "dependencies": {
     "@polymer/iron-flex-layout": "^3.0.1",
     "@polymer/iron-iconset-svg": "^3.0.1",
