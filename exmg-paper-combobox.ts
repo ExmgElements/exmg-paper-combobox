@@ -215,7 +215,11 @@ export class PaperComboboxElement extends LitElement {
   }
 
   get value() {
-    return this.selectedValue;
+    return this.selected;
+  }
+
+  set value(value) {
+    this.selected = value;
   }
 
   /***************** OBSERVERS *******************/
