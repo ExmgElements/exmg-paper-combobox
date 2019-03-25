@@ -605,6 +605,9 @@ export class PaperComboboxElement extends LitElement {
         .container {
           @apply --layout-horizontal;
         }
+        .container.with-label > paper-menu-button {
+          margin-top: 16px;
+        }
         paper-input-container {
           @apply --layout-flex;
         }
@@ -646,7 +649,6 @@ export class PaperComboboxElement extends LitElement {
         }
         paper-menu-button {
           padding: 0;
-          margin-top: 16px;
         }
         paper-icon-button {
           margin: 0;
@@ -661,8 +663,9 @@ export class PaperComboboxElement extends LitElement {
           line-height: 22px;
         }
       </style>
-      <div class="container">
+      <div class="container ${this.label ? 'with-label' : ''}">
         <paper-input-container
+          ?no-label-float="${!this.label}"
           ?always-float-label="${this.computeAlwaysFloatLabel()}"
           @tap="${this.onContainerTap}"
           ?disabled="${this.disabled}"
