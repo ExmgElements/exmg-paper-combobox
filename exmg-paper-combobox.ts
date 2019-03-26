@@ -176,6 +176,8 @@ export class PaperComboboxElement extends LitElement {
    */
   @property({type: Boolean, attribute: 'input-focused'}) inputFocused: boolean = false;
 
+  @property({type: Boolean, attribute: 'no-float-label'}) noFloatLabel: boolean = false;
+
   /**
    * Is menu button state open
    */
@@ -663,17 +665,18 @@ export class PaperComboboxElement extends LitElement {
           line-height: 22px;
         }
       </style>
-      <div class="container ${this.label ? 'with-label' : ''}">
+      <div class="container ${this.label && !this.noFloatLabel ? 'with-label' : ''}">
         <paper-input-container
-          ?no-label-float="${!this.label}"
+          ?no-label-float="${this.noFloatLabel || !this.label}"
           ?always-float-label="${this.computeAlwaysFloatLabel()}"
           @tap="${this.onContainerTap}"
           ?disabled="${this.disabled}"
           ?focused="${this.inputFocused}"
           @focused-changed="${this.onInputFocusChanged}"
           ?invalid="${this.invalid}"
-          id="paperInputContainer">
-          <label slot="label" ?hidden="${!this.label}" aria-hidden="true">${this.label}</label>
+          id="paperInputContainer"
+        >
+          ${ !this.selected || !this.noFloatLabel ? html`<label slot="label" ?hidden="${!this.label}" aria-hidden="true">${this.label}</label>` : '' }
           <iron-input bind-value="${this.inputValue}" slot="input">
             <span class="${classMap({tokens: true, selected: !!this.token})}">
               ${this.renderTokenButton()}
