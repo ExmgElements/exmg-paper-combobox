@@ -593,9 +593,16 @@ export class PaperComboboxElement extends LitElement {
         :host {
           display: block;
           min-width: 167px;
+          --paper-button-color: var(--exmg-paper-combobox-selected-item-color, #000);
+          --paper-button-bg-color: var(--exmg-paper-combobox-selected-item-bg-color, #fff);
+          --paper-icon-button-ink-color: var(--exmg-paper-combobox-dropdown-button-color, #000);
+          --paper-icon-button-ink-bg-color: var(--exmg-paper-combobox-dropdown-button-bg-color, transparent);
+          --paper-listbox-color: var(--exmg-paper-combobox-dropdown-list-color, #000);
+          --paper-listbox-background-color: var(--exmg-paper-combobox-dropdown-list-bg-color, #fff);
         }
         paper-icon-button {
           color: var(--paper-icon-button-ink-color, var(--primary-text-color));
+          background-color: var(--paper-icon-button-ink-bg-color);
         }
         :host([focused]) {
           outline: none;
@@ -656,6 +663,8 @@ export class PaperComboboxElement extends LitElement {
         }
         paper-button {
           padding: 0;
+          color: var(--paper-button-color);
+          background-color: var(--paper-button-bg-color);
         }
         .container {
           @apply --layout-flex;

@@ -47,6 +47,16 @@
       <h3>Basic exmg-paper-combobox demo</h3>
       <demo-snippet>
         <template>
+          <style>
+            .styled {
+              --exmg-paper-combobox-selected-item-color: #fff;
+              --exmg-paper-combobox-selected-item-bg-color: #000;
+              --exmg-paper-combobox-dropdown-button-color: #fff;
+              --exmg-paper-combobox-dropdown-button-bg-color: #000;
+              --exmg-paper-combobox-dropdown-list-color: #fff;
+              --exmg-paper-combobox-dropdown-list-bg-color: #000;
+            }
+          </style>
           <h4>Selection-list</h4>
           <div>Select value is <input id="selected-value" readonly disabled placeholder="None"/></div>
           <exmg-paper-combobox id="combobox" label="Creatives" style="display:inline-block;">
@@ -101,6 +111,13 @@
             <paper-item>Evonne</paper-item>
             <paper-item>Evonne</paper-item>
             <paper-item>Evonne</paper-item>
+          </exmg-paper-combobox>
+
+          <h4>Selection-list styled</h4>
+          <exmg-paper-combobox label="Creatives" attr-for-selected="data-id" selected="1012" class="styled">
+            <paper-item data-id="1001">Rubin</paper-item>
+            <paper-item data-id="1012">Gennie</paper-item>
+            <paper-item data-id="1403">Ronna</paper-item>
           </exmg-paper-combobox>
 
           <h4>Selection-list with selected value</h4>
