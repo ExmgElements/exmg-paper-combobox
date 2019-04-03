@@ -594,6 +594,9 @@ export class PaperComboboxElement extends LitElement {
           display: block;
           min-width: 167px;
         }
+        paper-icon-button {
+          color: var(--paper-icon-button-ink-color, var(--primary-text-color));
+        }
         :host([focused]) {
           outline: none;
         }
@@ -631,10 +634,6 @@ export class PaperComboboxElement extends LitElement {
           overflow: hidden;
           white-space: nowrap;
           text-overflow: ellipsis;
-        }
-        .tokens paper-button iron-icon {
-          height: 16px;
-          width: 16px;
         }
         .tokens.selected input {
           color: transparent;
